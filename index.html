@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>مستندات جامع API پنل مدیریت OpenVPN</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+              950: '#0b154a'
+            },
+            slate3: {
+              50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',
+              500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617'
+            }
+          },
+          fontFamily: {
+            sans: ['Vazirmatn','system-ui','ui-sans-serif','Segoe UI','Tahoma','Geneva','Arial','sans-serif'],
+            mono: ['Fira Code','Consolas','Monaco','ui-monospace','SFMono-Regular','Menlo','monospace']
+          },
+          boxShadow: {
+            'xl-soft': '0 20px 50px -20px rgba(0,0,0,.25)',
+            'inner-1': 'inset 0 1px 2px rgba(255,255,255,.06)'
+          },
+          animation: {
+            'fade-up': 'fadeUp .5s ease both',
+            'scale-in': 'scaleIn .3s ease both'
+          },
+          keyframes: {
+            fadeUp: { '0%':{opacity:0, transform:'translateY(8px)'}, '100%':{opacity:1, transform:'translateY(0)'} },
+            scaleIn: { '0%':{opacity:0, transform:'scale(.98)'}, '100%':{opacity:1, transform:'scale(1)'} }
+          }
+        }
+      }
+    }
+  </script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" referrerpolicy="no-referrer" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.css" referrerpolicy="no-referrer" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" referrerpolicy="no-referrer" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+<style>
+    :root{
+      --radius: 14px;
+      --bg-gradient: radial-gradient(1200px 600px at 90% -10%, rgba(59,130,246,.18), transparent 60%),
+                      radial-gradient(900px 500px at 10% -10%, rgba(14,165,233,.18), transparent 60%);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: Vazirmatn, sans-serif; background: var(--bg-gradient), #f8fafc; }
+    .dark body, body.dark { background: radial-gradient(1200px 600px at 90% -10%, rgba(59,130,246,.1), transparent 60%),
+                            radial-gradient(900px 500px at 10% -10%, rgba(14,165,233,.12), transparent 60%), #0f172a;}
+    
+    /* Glass effect */
+    .glass { 
+      background: rgba(255, 255, 255, 0.7); 
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(226, 232, 240, 0.7);
+      border-radius: var(--radius);
+    }
+    .dark .glass { 
+      background: rgba(2, 6, 23, 0.5); 
+      border-color: rgba(148, 163, 184, 0.16);
+    }
+    
+    /* Card styles */
+    .card {
+      border-radius: var(--radius);
+      box-shadow: 0 12px 30px -20px rgba(2, 6, 23, 0.45);
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 40px -20px rgba(2, 6, 23, 0.5);
+    }
+    
+    /* Button styles */
+    .btn {
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius);
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+    .btn-primary {
+      background-color: rgb(59, 130, 246);
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: rgb(37, 99, 235);
+    }
+    
+    /* Table of contents */
+    .toc-item {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+    .toc-item:hover {
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+    .toc-item.active {
+      background-color: rgba(59, 130, 246, 0.12);
+      color: rgb(29, 78, 216);
+    }
+    .dark .toc-item.active {
+      background-color: rgba(59, 130, 246, 0.2);
+      color: rgb(147, 197, 253);
+    }
+    
+    /* Code blocks */
+    .code-block {
+      direction: ltr;
+      text-align: left;
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    .code-block pre {
+      overflow-x: auto;
+    }
+    
+    /* Endpoint badges */
+    .endpoint-badge {
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.55rem;
+      border-radius: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 60px;
+    }
+    .badge-get {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .dark .badge-get {
+      background: #1e3a8a;
+      color: #dbeafe;
+    }
+    .badge-post {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .dark .badge-post {
+      background: #14532d;
+      color: #dcfce7;
+    }
+    .badge-put {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .dark .badge-put {
+      background: #78350f;
+      color: #fde68a;
+    }
+    .badge-delete {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .dark .badge-delete {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+    
+    /* Note boxes */
+    .note {
+      border-right-width: 4px;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+    }
+    .note-warning {
+      background: rgba(245, 158, 11, 0.08);
+      border-right-color: #f59e0b;
+    }
+    .note-info {
+      background: rgba(59, 130, 246, 0.08);
+      border-right-color: #3b82f6;
+    }
+    .note-success {
+      background: rgba(16, 185, 129, 0.08);
+      border-right-color: #10b981;
+    }
+    .note-danger {
+      background: rgba(239, 68, 68, 0.08);
+      border-right-color: #ef4444;
+    }
+    .dark .note-warning {
+      background: rgba(245, 158, 11, 0.16);
+    }
+    .dark .note-info {
+      background: rgba(59, 130, 246, 0.16);
+    }
+    .dark .note-success {
+      background: rgba(16, 185, 129, 0.16);
+    }
+    .dark .note-danger {
+      background: rgba(239, 68, 68, 0.16);
+    }
+    
+    /* Parameter cards */
+    .param-card {
+      background-color: rgba(241, 245, 249, 0.7);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .dark .param-card {
+      background-color: rgba(15, 23, 42, 0.5);
+    }
+    .param-name {
+      font-weight: 600;
+      color: rgb(59, 130, 246);
+    }
+    .dark .param-name {
+      color: rgb(96, 165, 250);
+    }
+    .param-required {
+      background-color: rgb(239, 68, 68);
+      color: white;
+      padding: 0.15rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      margin-right: 0.5rem;
+    }
+    .param-optional {
+      background-color: rgb(16, 185, 129);
+      color: white;
+      padding: 0.15rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      margin-right: 0.5rem;
+    }
+    .param-conditional {
+        background-color: rgb(245, 158, 11);
+        color: white;
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        margin-right: 0.5rem;
+    }
+    
+    /* Section titles */
+    .section-title {
+      position: relative;
+      padding-bottom: 0.8rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid rgba(59, 130, 246, 0.12);
+    }
+    .section-title:after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      right: 0;
+      height: 2px;
+      width: 64px;
+      background: #3b82f6;
+    }
+    .dark .section-title {
+      border-bottom-color: #1f2a3a;
+    }
+    .dark .section-title:after {
+      background: #60a5fa;
+    }
+    
+    /* Progress bar */
+    .progress-bar {
+      position: fixed;
+      inset-inline-start: 0;
+      inset-block-start: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #60a5fa, #22d3ee);
+      width: 0%;
+      z-index: 60;
+    }
+    
+    /* Mobile navigation */
+    .mobile-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(226, 232, 240, 0.8);
+      padding: 0.5rem;
+    }
+    .dark .mobile-nav {
+      background: rgba(15, 23, 42, 0.95);
+      border-top: 1px solid rgba(51, 65, 85, 0.8);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      :root {
+        --radius: 12px;
+      }
+    }
+  </style>
+<style>
+/* --- Mobile overflow fixes --- */
+* { box-sizing: border-box; }
+html, body { overflow-x: hidden; }
+header, nav, main, section { max-width: 100%; overflow-x: hidden; }
+pre { overflow-x: auto; white-space: pre; }
+.code-block { overflow-x: auto; }
+table { display: block; width: 100%; overflow-x: auto; }
+img, svg, video, canvas { max-width: 100%; height: auto; }
+/* tighten padding on very small screens */
+@media (max-width: 480px){
+  .px-4 { padding-left: 12px !important; padding-right: 12px !important; }
+  .p-6 { padding: 16px !important; }
+  .card { margin-left: 0 !important; margin-right: 0 !important; }
+  .glass { margin-left: 0 !important; margin-right: 0 !important; }
+}
+/* prevent long inline code / URLs from breaking layout */
+code, kbd, samp { word-break: break-word; }
+</style><style>
+/* --- Desktop cascading (آبشاری) dropdown --- */
+@media (min-width: 768px){
+  #topNav{ position: sticky; top: 56px; }
+  #topNav ul.md\:flex > li.group{ position: relative; }
+  #topNav .mega-panel{
+    position:absolute; left:0; top:100%; margin-top:.5rem;
+    width:560px; max-width:80vw;
+    padding:1rem;
+    background: var(--tw-bg-opacity,1);
+    background-color: rgba(255,255,255,var(--tw-bg-opacity,1));
+  }
+  .dark #topNav .mega-panel{ background-color: #0f172a; }
+  #topNav .mega-panel{
+    border:1px solid rgba(148,163,184,.35);
+    border-radius:.75rem;
+    box-shadow:0 20px 60px -20px rgba(15,23,42,.25);
+    opacity:0; visibility:hidden; transform: translateY(10px);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+    pointer-events:none;
+    z-index:60;
+  }
+  #topNav ul.md\:flex > li.group:hover > .mega-panel{
+    opacity:1; visibility:visible; transform: translateY(0);
+    transition-delay:0s;
+    pointer-events:auto;
+  }
+  /* link cascade */
+  #topNav .mega-panel .grid > a{
+    opacity:0; transform: translateY(6px);
+    transition: opacity .2s ease, transform .2s ease;
+  }
+  #topNav ul.md\:flex > li.group:hover .mega-panel .grid > a{
+    opacity:1; transform:none;
+  }
+  /* staggered delays for cascade effect */
+  #topNav .mega-panel .grid > a:nth-child(1){ transition-delay:.02s; }
+  #topNav .mega-panel .grid > a:nth-child(2){ transition-delay:.04s; }
+  #topNav .mega-panel .grid > a:nth-child(3){ transition-delay:.06s; }
+  #topNav .mega-panel .grid > a:nth-child(4){ transition-delay:.08s; }
+  #topNav .mega-panel .grid > a:nth-child(5){ transition-delay:.10s; }
+  #topNav .mega-panel .grid > a:nth-child(6){ transition-delay:.12s; }
+  #topNav .mega-panel .grid > a:nth-child(7){ transition-delay:.14s; }
+  #topNav .mega-panel .grid > a:nth-child(8){ transition-delay:.16s; }
+  #topNav .mega-panel .grid > a:nth-child(9){ transition-delay:.18s; }
+  #topNav .mega-panel .grid > a:nth-child(10){ transition-delay:.20s; }
+}
+</style><style>
+/* Desktop cascading dropdown (no change to mobile) */
+@media (min-width: 768px){
+  #topNav{ position: sticky; top: 56px; }
+  #topNav ul.md\:flex > li.group{ position: relative; }
+  #topNav .mega-panel{
+    position:absolute; left:0; top:100%; margin-top:.5rem;
+    width:560px; max-width:80vw; padding:1rem;
+    border:1px solid rgba(148,163,184,.35);
+    border-radius:.75rem;
+    box-shadow:0 20px 60px -20px rgba(15,23,42,.25);
+    background:#fff; z-index:60;
+    opacity:0; visibility:hidden; transform: translateY(10px);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+    pointer-events:none;
+  }
+  .dark #topNav .mega-panel{ background:#0f172a; }
+  #topNav ul.md\:flex > li.group:hover > .mega-panel{
+    opacity:1; visibility:visible; transform: translateY(0);
+    pointer-events:auto; transition-delay:0s;
+  }
+  #topNav .mega-panel .grid > a{
+    opacity:0; transform: translateY(6px);
+    transition: opacity .2s ease, transform .2s ease;
+  }
+  #topNav ul.md\:flex > li.group:hover .mega-panel .grid > a{ opacity:1; transform:none; }
+  #topNav .mega-panel .grid > a:nth-child(1){ transition-delay:.02s; }
+  #topNav .mega-panel .grid > a:nth-child(2){ transition-delay:.04s; }
+  #topNav .mega-panel .grid > a:nth-child(3){ transition-delay:.06s; }
+  #topNav .mega-panel .grid > a:nth-child(4){ transition-delay:.08s; }
+  #topNav .mega-panel .grid > a:nth-child(5){ transition-delay:.10s; }
+  #topNav .mega-panel .grid > a:nth-child(6){ transition-delay:.12s; }
+  #topNav .mega-panel .grid > a:nth-child(7){ transition-delay:.14s; }
+  #topNav .mega-panel .grid > a:nth-child(8){ transition-delay:.16s; }
+  #topNav .mega-panel .grid > a:nth-child(9){ transition-delay:.18s; }
+  #topNav .mega-panel .grid > a:nth-child(10){ transition-delay:.20s; }
+}
+</style><style>
+/* Hide top navigation ONLY on desktop (md+) while keeping mobile nav) */
+@media (min-width: 768px){
+  #topNav { display: none !important; }
+}
+</style></head>
+<body class="text-slate3-800 dark:text-slate3-200 selection:bg-brand-200/50 dark:selection:bg-brand-700/40">
+<div class="progress-bar" id="progress"></div>
+<header class="fixed top-0 inset-x-0 z-50">
+<div class="glass border-b border-slate3-200 dark:border-slate3-700">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-600 text-white shadow-inner-1 flex-shrink-0">
+<i class="fa-solid fa-shield-halved"></i>
+</span>
+<div class="leading-tight flex-1 min-w-0">
+<div class="font-extrabold text-lg md:text-xl text-brand-700 dark:text-brand-300 truncate">مستندات API</div>
+<div class="text-xs md:text-sm text-slate3-500 dark:text-slate3-400 truncate">پنل مدیریت OpenVPN</div>
+</div>
+</div>
+<div class="hidden lg:flex items-center gap-4 flex-1 max-w-xl mx-8">
+<div class="relative flex-1">
+<input class="w-full rounded-xl bg-white/80 dark:bg-slate3-900/70 border border-slate3-200 dark:border-slate3-700 outline-none px-4 py-2.5 pr-10 focus:ring-2 focus:ring-brand-500/20" id="docSearch" placeholder="جستجو در مستندات…" type="search"/>
+<i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-slate3-400"></i>
+</div>
+<span class="hidden xl:inline-flex items-center text-xs text-slate3-500 dark:text-slate3-400 bg-slate3-100 dark:bg-slate3-800 rounded-lg px-2 py-1">
+<span class="px-1 py-0.5 bg-white dark:bg-slate3-700 rounded-md mr-1">/</span> برای جستجو
+          </span>
+</div>
+<div class="flex items-center gap-2">
+<button class="btn rounded-xl p-2.5 border border-slate3-200 dark:border-slate3-700 bg-white/80 dark:bg-slate3-900/70" id="themeBtn">
+<i class="fa-solid fa-moon"></i>
+</button>
+</div>
+</div>
+</div>
+</header><nav class="top-[56px] dark:border-slate3-700 dark:bg-slate3-900 border-slate3-200 overflow-x-hidden sticky bg-white z-50 w-full border-t shadow-sm" id="topNav"><div class="max-w-7xl mx-auto px-4"><div class="flex items-center justify-between py-2"><div class="text-xs text-slate3-500">راهنمای API</div><ul class="hidden md:flex items-center gap-1 text-sm font-semibold"><li class="relative group"><button class="px-3 py-2 rounded-lg hover:bg-brand-50 dark:hover:bg-slate3-800">شروع</button><div class="mega-panel"><div class="grid grid-cols-2 gap-2"></div></div></li><li class="relative group"><button class="px-3 py-2 rounded-lg hover:bg-brand-50 dark:hover:bg-slate3-800">کاربران</button><div class="mega-panel"><div class="grid grid-cols-2 gap-2"><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#users">مدیریت کاربران</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#users">مدیریت کاربران</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#users">مدیریت کاربران</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#users">مدیریت کاربران</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#users">مدیریت کاربران</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#users">مدیریت کاربران</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#users">مدیریت کاربران</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#users">مدیریت کاربران</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#users">مدیریت کاربران</a></div></div></li><li class="relative group"><button class="px-3 py-2 rounded-lg hover:bg-brand-50 dark:hover:bg-slate3-800">نودها</button><div class="mega-panel"><div class="grid grid-cols-2 gap-2"><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#nodes">نودها</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#nodes">نودها</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#nodes">نودها</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#nodes">نودها</a></div></div></li><li class="relative group"><button class="px-3 py-2 rounded-lg hover:bg-brand-50 dark:hover:bg-slate3-800">پورت‌ها (Public)</button><div class="mega-panel"><div class="grid grid-cols-2 gap-2"><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#ports">پورت‌ها</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#ports">پورت‌ها</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#ports">پورت‌ها</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#ports">پورت‌ها</a></div></div></li><li class="relative group"><button class="px-3 py-2 rounded-lg hover:bg-brand-50 dark:hover:bg-slate3-800">نمایندگان</button><div class="mega-panel"><div class="grid grid-cols-2 gap-2"><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#subs-list">لیست</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#subs-get">جزئیات</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#subs-add">افزودن</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#subs-edit">ویرایش</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#subs-del">حذف</a><a class="block px-3 py-2 rounded-md hover:bg-slate3-100 dark:hover:bg-slate3-700" href="#subs-reset-usage">ریست مصرف</a></div></div></li></ul></div></div></nav>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 lg:pb-16">
+<div class="flex flex-col lg:flex-row gap-8">
+<main class="flex-1">
+<section class="relative overflow-hidden rounded-2xl bg-gradient-to-bl from-brand-600 via-brand-700 to-indigo-900 text-white p-8 md:p-12 mb-10 card">
+<div class="absolute inset-0 bg-black/10"></div>
+<div class="relative z-10">
+<h1 class="text-3xl md:text-4xl font-extrabold mb-4">مستندات جامع API پنل مدیریت OpenVPN</h1>
+<p class="text-lg md:text-xl text-brand-100/90 max-w-3xl">راهنمای کامل برای توسعه‌دهندگان جهت یکپارچه‌سازی سیستم مدیریت OpenVPN در ربات‌ها و سرویس‌ها</p>
+<div class="mt-8 flex flex-wrap gap-3">
+<a class="flex flex-col items-center text-xs p-2 rounded-lg" href="#status"><i class="fa-solid fa-heart-pulse text-lg mb-1"></i><span>سلامت</span></a>
+<a class="btn bg-transparent border border-white/50 hover:bg-white hover:text-brand-700 font-bold px-5 py-2.5 rounded-xl" href="#users">مشاهده Endpoints</a>
+</div>
+</div>
+</section>
+<section class="mb-12" id="introduction">
+<h2 class="section-title text-2xl md:text-3xl font-extrabold text-brand-800 dark:text-brand-200">مقدمه</h2>
+<div class="glass p-6 md:p-8 rounded-xl border border-slate3-200 dark:border-slate3-700">
+<p class="mb-4">این مستندات تمامی APIهای عمومی موجود در پنل مدیریت OpenVPN را پوشش می‌دهد. تمامی درخواست‌ها باید از طریق HTTPS ارسال شوند و پاسخ‌ها در قالب JSON خواهند بود.</p>
+<h4 class="text-xl font-bold mb-3">Base URL</h4>
+<div class="code-block">
+<pre class="language-bash"><code>https://your-panel-domain.com</code></pre>
+</div>
+<h4 class="text-xl font-bold mb-3 mt-6">هدرهای ضروری</h4>
+<div class="code-block">
+<pre class="language-bash"><code>X-API-KEY: YOUR_API_KEY_HERE
+Content-Type: application/json</code></pre>
+</div>
+<div class="note note-info mt-6">
+<h5 class="font-semibold flex items-center gap-2 mb-2"><i class="fa-solid fa-circle-info"></i> نکته مهم:</h5>
+<p>تمامی درخواست‌ها باید شامل هدر احراز هویت باشند. کلید API را می‌توانید از بخش تنظیمات پنل مدیریت (برای ادمین اصلی) یا بخش API (برای نمایندگان) دریافت کنید.</p>
+</div>
+</div>
+</section>
+<section class="mb-12" id="authentication">
+<h2 class="section-title text-2xl md:text-3xl font-extrabold text-brand-800 dark:text-brand-200">احراز هویت</h2>
+<div class="glass p-6 md:p-8 rounded-xl border border-slate3-200 dark:border-slate3-700">
+<p class="mb-4">سیستم API از دو نوع کلید با سطوح دسترسی متفاوت پشتیبانی می‌کند:</p>
+<ul class="list-disc pr-5 mb-4 space-y-2">
+<li><strong>کلید ادمین اصلی (Main Admin Key)</strong>: این کلید دسترسی کامل به تمام Endpointها را فراهم می‌کند، از جمله مدیریت نودها و تمام کاربران. این کلید از طریق پنل اصلی در بخش "تنظیمات" قابل ایجاد و مدیریت است.</li>
+<li><strong>کلید نماینده (Sub-Admin Key)</strong>: این کلید دارای دسترسی محدود است و فقط می‌تواند کاربرانی که به خود آن نماینده تعلق دارند را مدیریت کند. نمایندگان نمی‌توانند به Endpointهای مدیریت نودها دسترسی داشته باشند. این کلید توسط خود نماینده از داخل پنلش در بخش "API" ایجاد می‌شود.</li>
+</ul>
+<p class="mb-4">پنل به صورت هوشمند بر اساس کلید ارسال شده در هدر `X-API-KEY`، سطح دسترسی را تشخیص داده و مجوزهای لازم را اعمال می‌کند.</p>
+<div class="note note-warning mt-6">
+<h5 class="font-semibold flex items-center gap-2 mb-2"><i class="fa-solid fa-triangle-exclamation"></i> امنیت کلید API:</h5>
+<p>کلید API مانند یک رمز عبور عمل می‌کند. آن را در اختیار دیگران قرار ندهید و در سمت کلاینت (مثل اپلیکیشن‌های وب یا موبایل) به صورت hard-coded استفاده نکنید.</p>
+</div>
+</div>
+</section>
+<section class="mb-12" id="status">
+<h2 class="section-title text-2xl md:text-3xl font-extrabold text-brand-800 dark:text-brand-200">سلامت سرویس</h2>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">وضعیت پنل</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/status</span>
+</div>
+<p class="mb-4">Health-check عمومی جهت بررسی آنلاین بودن سرویس (بدون نیاز به X-API-KEY).</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/status" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ موفق:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "Service is running",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "1.0.0"
+}</code></pre>
+</div>
+</article>
+</section>
+<section class="mb-12" id="users">
+<h2 class="section-title text-2xl md:text-3xl font-extrabold text-brand-800 dark:text-brand-200">مدیریت کاربران</h2>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="create-user">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-post">POST</span>
+<h4 class="font-bold text-lg">ایجاد کاربر جدید</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/users</span>
+</div>
+<p class="mb-4">این endpoint برای ایجاد کاربران VPN جدید استفاده می‌شود. هم می‌توان کاربران تکی ایجاد کرد و هم به صورت گروهی.</p>
+<h5 class="font-semibold mb-3">پارامترهای بدنه درخواست (Body):</h5>
+<div class="max-w-7xl mx-auto px-4 py-6">
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-conditional">شرطی</span>
+<span class="param-name">username</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">نام کاربری برای ساخت کاربر تکی. اگر از `bulk_count` استفاده شود، نباید ارسال شود.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: رشته</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-conditional">شرطی</span>
+<span class="param-name">bulk_count</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">تعداد کاربران برای ایجاد گروهی. اگر بزرگتر از 0 باشد، `username` نادیده گرفته می‌شود و نام‌های کاربری تصادفی ساخته می‌شود.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: عدد صحیح</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">max_clients</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">تعداد اتصالات همزمان مجاز برای کاربر.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: عدد صحیح، پیش‌فرض: 1</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">data_limit</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">حجم ترافیک مجاز. اگر ارسال نشود یا `null` باشد، نامحدود خواهد بود.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: عدد صحیح</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">data_limit_unit</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">واحد حجم ترافیک. مقادیر مجاز: "GB" یا "MB".</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: رشته، پیش‌فرض: "GB"</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">notes</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">یادداشت برای کاربر.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: رشته</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">nodes</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">آرایه‌ای از ID نودهایی که کاربر مجاز به اتصال به آن‌هاست.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: آرایه عددی، مثال: `[1, 3]`</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">activation_type</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">نوع فعال‌سازی. مقادیر مجاز: "fixed_date" یا "flexible_days".</p>
+<p class="text-xs mt-1 text-slate3-500">پیش‌فرض: "fixed_date"</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-conditional">شرطی</span>
+<span class="param-name">pending_activation_days</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">تعداد روزهای اعتبار از زمان اولین اتصال کاربر. **فقط برای `activation_type="flexible_days"` الزامی است.**</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: عدد صحیح</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">expiry_date_str</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">تاریخ انقضای مشخص با فرمت `YYYY-MM-DD`. **برای `activation_type="fixed_date"` استفاده می‌شود.**</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: رشته</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">expiry_days</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">تعداد روز تا انقضا از زمان ایجاد. **برای `activation_type="fixed_date"` استفاده می‌شود.** اگر هم `expiry_date_str` و هم این پارامتر ارسال شوند، `expiry_date_str` اولویت دارد.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: عدد صحیح</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">sub_admin_id</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">ID نماینده‌ای که کاربر به او تعلق خواهد داشت. **(فقط برای ادمین اصلی)**</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: عدد صحیح</p>
+</div>
+</div>
+<h5 class="font-semibold mb-3">مثال curl (ایجاد کاربر تکی):</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X POST "https://your-panel-domain.com/api/v1/users" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "user123",
+    "max_clients": 2,
+    "data_limit": 50,
+    "data_limit_unit": "GB",
+    "notes": "User for testing API",
+    "nodes": [1, 3],
+    "activation_type": "fixed_date",
+    "expiry_date_str": "2024-12-31"
+  }'</code></pre>
+</div>
+<h5 class="font-semibold mb-3">مثال curl (ایجاد کاربران گروهی):</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X POST "https://your-panel-domain.com/api/v1/users" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bulk_count": 5,
+    "max_clients": 1,
+    "data_limit": 10,
+    "data_limit_unit": "GB",
+    "nodes": [1],
+    "activation_type": "flexible_days",
+    "pending_activation_days": 30
+  }'</code></pre>
+</div>
+<h5 class="font-semibold mt-6 mb-3">پاسخ موفق:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "User(s) created successfully",
+  "data": {
+    "users": [
+      {
+        "username": "user123",
+        "password": "generated_password",
+        "config_url": "https://your-panel-domain.com/sub/user123",
+        "expiry_date": "2024-12-31"
+      }
+    ]
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="get-user">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">دریافت اطلاعات کاربر</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/users/{username}</span>
+</div>
+<p class="mb-4">این endpoint برای دریافت اطلاعات کامل یک کاربر خاص استفاده می‌شود.</p>
+<h5 class="font-semibold mb-3">پارامترهای مسیر (Path):</h5>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-required">اجباری</span>
+<span class="param-name">username</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">نام کاربری مورد نظر</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: رشته</p>
+</div>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/users/user123" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "username": "user123",
+    "status": "active",
+    "max_clients": 2,
+    "data_limit": 53687091200,
+    "data_used": 1073741824,
+    "data_limit_unit": "GB",
+    "expiry_date": "2024-12-31",
+    "activation_type": "fixed_date",
+    "nodes": [1, 3],
+    "notes": "User for testing API",
+    "created_at": "2024-01-15T10:30:00Z",
+    "online": false
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="edit-user">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-put">PUT</span>
+<h4 class="font-bold text-lg">ویرایش کاربر</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/users/{username}</span>
+</div>
+<p class="mb-4">این endpoint برای ویرایش اطلاعات یک کاربر استفاده می‌شود. فقط پارامترهایی که قصد تغییرشان را دارید ارسال کنید.</p>
+<h5 class="font-semibold mb-3">پارامترهای قابل ویرایش:</h5>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">max_clients</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">تعداد اتصال همزمان</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">data_limit</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">محدودیت حجم داده (برای نامحدود کردن `null` بفرستید)</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">data_limit_unit</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">واحد حجم ("GB" یا "MB")</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">notes</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">یادداشت</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">nodes</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">آرایه‌ای از IDهای نودهای مجاز</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">activation_type</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">نوع فعال‌سازی ("fixed_date" یا "flexible_days")</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">pending_activation_days</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">روزهای فعال‌سازی شناور</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">expiry_date_str</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">تاریخ انقضا با فرمت `YYYY-MM-DD`</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">reset_activation</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">برای ریست کردن وضعیت فعال‌سازی کاربر روزشمار (تنظیم به `true`).</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: Boolean</p>
+</div>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X PUT "https://your-panel-domain.com/api/v1/users/user123" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "max_clients": 5,
+    "data_limit": 200,
+    "data_limit_unit": "GB",
+    "notes": "Updated user limits",
+    "nodes": [1, 2],
+    "activation_type": "flexible_days",
+    "pending_activation_days": 60,
+    "reset_activation": true
+  }'</code></pre>
+</div>
+<h5 class="font-semibold mt-6 mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "User updated successfully",
+  "data": {
+    "username": "user123",
+    "changes": {
+      "max_clients": 5,
+      "data_limit": 214748364800,
+      "activation_type": "flexible_days",
+      "pending_activation_days": 60
+    }
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="toggle-user">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-post">POST</span>
+<h4 class="font-bold text-lg">فعال/غیرفعال کردن کاربر</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/users/{username}/toggle</span>
+</div>
+<p class="mb-4">این endpoint وضعیت فعال بودن کاربر را تغییر می‌دهد. اگر کاربر فعال باشد، غیرفعال می‌شود و بالعکس.</p>
+<h5 class="font-semibold mb-3">پارامترها:</h5>
+<p class="text-slate3-600 dark:text-slate3-400 mb-4">این Endpoint بدنه درخواست (Body) ندارد.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X POST "https://your-panel-domain.com/api/v1/users/user123/toggle" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ (در حالت غیرفعال کردن):</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "User disabled successfully",
+  "data": {
+    "username": "user123",
+    "new_status": "disabled"
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="delete-user">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-delete">DELETE</span>
+<h4 class="font-bold text-lg">حذف کاربر</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/users/{username}</span>
+</div>
+<p class="mb-4">این endpoint کاربر را به طور کامل از سیستم (شامل سرور اصلی و تمام نودها) حذف می‌کند.</p>
+<h5 class="font-semibold mb-3">پارامترها:</h5>
+<p class="text-slate3-600 dark:text-slate3-400 mb-4">این Endpoint بدنه درخواست (Body) ندارد.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X DELETE "https://your-panel-domain.com/api/v1/users/user123" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "User deleted successfully",
+  "data": {
+    "username": "user123"
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="reset-traffic">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-post">POST</span>
+<h4 class="font-bold text-lg">ریست ترافیک کاربر</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/users/{username}/reset_traffic</span>
+</div>
+<p class="mb-4">این endpoint میزان ترافیک مصرفی کاربر را صفر می‌کند و اتصال فعال او را قطع می‌کند.</p>
+<h5 class="font-semibold mb-3">پارامترها:</h5>
+<p class="text-slate3-600 dark:text-slate3-400 mb-4">این Endpoint بدنه درخواست (Body) ندارد.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X POST "https://your-panel-domain.com/api/v1/users/user123/reset_traffic" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "User traffic reset successfully",
+  "data": {
+    "username": "user123",
+    "previous_usage": 1073741824,
+    "new_usage": 0
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="user-subscription">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">دریافت لینک اشتراک کاربر</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/users/{username}/sub</span>
+</div>
+<p class="mb-4">این endpoint لینک صفحه اشتراک کاربر را برمی‌گرداند که شامل تمام کانفیگ‌های مجاز برای اوست.</p>
+<h5 class="font-semibold mb-3">پارامترها:</h5>
+<p class="text-slate3-600 dark:text-slate3-400 mb-4">این Endpoint پارامتر ورودی ندارد.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/users/user123/sub" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "username": "user123",
+    "subscription_url": "https://your-panel-domain.com/sub/user123",
+    "qr_code_url": "https://your-panel-domain.com/sub/user123/qr"
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="list-all-users">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">لیست جامع کاربران</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/users/list_all</span>
+</div>
+<p class="mb-4">نمایش همه کاربران. برای ادمین اصلی به‌صورت ساختاریافته، برای نماینده فقط کاربران خودش.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/users/list_all" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ (برای ادمین اصلی):</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "users": [
+      {
+        "username": "user123",
+        "status": "active",
+        "max_clients": 2,
+        "data_used": 1073741824,
+        "data_limit": 53687091200,
+        "expiry_date": "2024-12-31",
+        "online": false,
+        "sub_admin": "main",
+        "created_at": "2024-01-15T10:30:00Z"
+      },
+      {
+        "username": "user456",
+        "status": "disabled",
+        "max_clients": 1,
+        "data_used": 0,
+        "data_limit": null,
+        "expiry_date": null,
+        "online": true,
+        "sub_admin": "reseller1",
+        "created_at": "2024-01-14T15:45:00Z"
+      }
+    ],
+    "total_count": 2,
+    "active_count": 1,
+    "online_count": 1
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="user-all-ovpn">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">تمام لینک‌های OVPN</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/users/{username}/all_ovpn_links</span>
+</div>
+<p class="mb-4">بازگرداندن تمام لینک‌های دانلود کانفیگ‌های OVPN (تک‌سرور و چندسرور) برای کاربر.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/users/user123/all_ovpn_links" \
+  -H "X-API-KEY: YOUR_ADMIN_OR_SUB_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "username": "user123",
+    "configs": [
+      {
+        "name": "Single Server - Node 1",
+        "download_url": "https://your-panel-domain.com/download/user123/node1.ovpn",
+        "server": "node1.your-domain.com:1194",
+        "protocol": "udp"
+      },
+      {
+        "name": "Multi-Server Config",
+        "download_url": "https://your-panel-domain.com/download/user123/multi.ovpn",
+        "servers": [
+          "node1.your-domain.com:1194",
+          "node2.your-domain.com:1194"
+        ],
+        "protocol": "udp"
+      }
+    ]
+  }
+}</code></pre>
+</div>
+</article>
+</section>
+<section class="mb-12" id="nodes">
+<h2 class="section-title text-2xl md:text-3xl font-extrabold text-brand-800 dark:text-brand-200">مدیریت نودها</h2>
+<div class="note note-danger mb-6">
+<h5 class="font-semibold flex items-center gap-2 mb-2"><i class="fa-solid fa-shield-halved"></i> سطح دسترسی:</h5>
+<p>تمام Endpoint های مدیریت نودها فقط با کلید API **ادمین اصلی** قابل دسترسی هستند.</p>
+</div>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="list-nodes">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">دریافت لیست نودها</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/nodes</span>
+</div>
+<p class="mb-4">این endpoint لیست تمام نودهای موجود در سیستم را برمی‌گرداند.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/nodes" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "nodes": [
+      {
+        "id": 1,
+        "name": "Main Server",
+        "ip_address": "192.168.1.100",
+        "status": "online",
+        "openvpn_port": "1194",
+        "protocol": "udp",
+        "user_count": 15,
+        "online_users": 3,
+        "last_sync": "2024-01-15T10:25:00Z"
+      },
+      {
+        "id": 2,
+        "name": "USA Node",
+        "ip_address": "192.168.1.101",
+        "status": "online",
+        "openvpn_port": "1194",
+        "protocol": "udp",
+        "user_count": 8,
+        "online_users": 2,
+        "last_sync": "2024-01-15T10:28:00Z"
+      }
+    ]
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="get-node">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">دریافت اطلاعات نود خاص</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/nodes/{node_id}</span>
+</div>
+<p class="mb-4">این endpoint اطلاعات یک نود خاص را با استفاده از ID آن برمی‌گرداند.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/nodes/1" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<p class="text-slate3-600 dark:text-slate3-400 mb-4">ساختار پاسخ مشابه یک آبجکت از لیست نودها است.</p>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "name": "Main Server",
+    "ip_address": "192.168.1.100",
+    "status": "online",
+    "openvpn_port": "1194",
+    "protocol": "udp",
+    "user_count": 15,
+    "online_users": 3,
+    "last_sync": "2024-01-15T10:25:00Z",
+    "created_at": "2024-01-10T08:00:00Z",
+    "ssh_status": "connected"
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="add-node">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-post">POST</span>
+<h4 class="font-bold text-lg">اضافه کردن نود جدید</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/nodes</span>
+</div>
+<p class="mb-4">این endpoint یک نود جدید به سیستم اضافه کرده و فرآیند نصب و پیکربندی خودکار را آغاز می‌کند. پاسخ API سریع (status code 202) بازگردانده می‌شود و مراحل راه‌اندازی در پس‌زمینه اجرا خواهند شد.</p>
+<h5 class="font-semibold mb-3">پارامترهای اجباری:</h5>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-required">اجباری</span>
+<span class="param-name">name</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">نام نود</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-required">اجباری</span>
+<span class="param-name">ip_address</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">آی‌پی عمومی نود</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-required">اجباری</span>
+<span class="param-name">ssh_password</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">پسورد SSH کاربر root</p>
+</div>
+</div>
+<h5 class="font-semibold mb-3">پارامترهای اختیاری:</h5>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">openvpn_port</span>
+</div>
+<p class="text-xs mt-1 text-slate3-500">پورت OpenVPN (پیش‌فرض: "1194")</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">protocol</span>
+</div>
+<p class="text-xs mt-1 text-slate3-500">پروتکل OpenVPN. مقدار مجاز: udp یا tcp (پیش‌فرض: "udp")</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">sync_all_users</span>
+</div>
+<p class="text-xs mt-1 text-slate3-500">اگر true باشد، همه کاربران موجود به نود جدید sync می‌شوند (پیش‌فرض: false)</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-optional">اختیاری</span>
+<span class="param-name">show_main_config</span>
+</div>
+<p class="text-xs mt-1 text-slate3-500">اگر true باشد، کانفیگ اصلی نود در پنل نمایش داده می‌شود (پیش‌فرض: false)</p>
+</div>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X POST "https://your-panel-domain.com/api/v1/nodes" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "New Node USA",
+    "ip_address": "192.168.1.100",
+    "ssh_password": "secure_ssh_password_123",
+    "openvpn_port": "1194",
+    "protocol": "udp",
+    "sync_all_users": true,
+    "show_main_config": false
+  }'</code></pre>
+</div>
+<h5 class="font-semibold mt-6 mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "accepted",
+  "message": "Node creation process started",
+  "data": {
+    "node_id": 3,
+    "name": "New Node USA",
+    "installation_status": "in_progress",
+    "estimated_completion_time": "5 minutes"
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="edit-node">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-put">PUT</span>
+<h4 class="font-bold text-lg">ویرایش نود</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/nodes/{node_id}</span>
+</div>
+<p class="mb-4">این endpoint اطلاعات یک نود را ویرایش کرده و تنظیمات را روی سرور نود اعمال می‌کند.</p>
+<h5 class="font-semibold mb-3">پارامترهای قابل ویرایش:</h5>
+<p class="mb-4 text-sm">شما می‌توانید هر یک از پارامترهای `name`, `ip_address`, `ssh_password`, `openvpn_port`, `protocol` را ارسال کنید.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X PUT "https://your-panel-domain.com/api/v1/nodes/1" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Node USA",
+    "ip_address": "192.168.1.101",
+    "ssh_password": "new_secure_password",
+    "openvpn_port": "1195",
+    "protocol": "tcp"
+  }'</code></pre>
+</div>
+<h5 class="font-semibold mt-6 mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "Node updated successfully",
+  "data": {
+    "node_id": 1,
+    "changes": {
+      "name": "Updated Node USA",
+      "ip_address": "192.168.1.101",
+      "openvpn_port": "1195",
+      "protocol": "tcp"
+    }
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="delete-node">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-delete">DELETE</span>
+<h4 class="font-bold text-lg">حذف نود</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/nodes/{node_id}</span>
+</div>
+<p class="mb-4">این endpoint یک نود را از سیستم حذف کرده و فرآیند پاکسازی را روی سرور نود اجرا می‌کند.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X DELETE "https://your-panel-domain.com/api/v1/nodes/1" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "Node deleted successfully",
+  "data": {
+    "node_id": 1,
+    "name": "Updated Node USA"
+  }
+}</code></pre>
+</div>
+</article>
+</section>
+<section class="mb-12" id="ports">
+<h2 class="section-title text-2xl md:text-3xl font-extrabold text-brand-800 dark:text-brand-200">مدیریت پورت‌ها (API)</h2>
+<div class="note note-danger mb-6">
+<h5 class="font-semibold flex items-center gap-2 mb-2"><i class="fa-solid fa-shield-halved"></i> سطح دسترسی:</h5>
+<p>تمام Endpointهای مدیریت پورت‌ها فقط با کلید API **ادمین اصلی** قابل دسترسی هستند.</p>
+</div>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="list-servers-for-ports">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">دریافت لیست سرورها</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/public/servers_for_ports</span>
+</div>
+<p class="mb-4">این endpoint لیست تمام سرورهای موجود (سرور اصلی و نودها) را برمی‌گرداند. شما از `id` هر سرور برای افزودن یا حذف پورت‌ها استفاده خواهید کرد.</p>
+<h5 class="font-semibold mb-3">پارامترها:</h5>
+<p class="text-slate3-600 dark:text-slate3-400 mb-4">این Endpoint بدنه درخواست (Body) ندارد.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/public/servers_for_ports" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mt-6 mb-3">پاسخ موفق:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "servers": [
+      {
+        "id": "main",
+        "name": "Main Server",
+        "ip_address": "192.168.1.100",
+        "type": "main"
+      },
+      {
+        "id": "node_1",
+        "name": "USA Node",
+        "ip_address": "192.168.1.101",
+        "type": "node"
+      },
+      {
+        "id": "node_2",
+        "name": "Europe Node",
+        "ip_address": "192.168.1.102",
+        "type": "node"
+      }
+    ]
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="list-ports">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">دریافت لیست پورت‌ها</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/public/ports</span>
+</div>
+<p class="mb-4">این endpoint یک گزارش کامل از پورت‌های پیش‌فرض و پورت‌های فرعی که اضافه کرده‌اید را به همراه سرورهای تخصیص داده شده به آن‌ها برمی‌گرداند. برای حذف یک تخصیص، به `port_id` و `server_identifier` نیاز خواهید داشت.</p>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/public/ports" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "default_ports": [
+      {
+        "port": 1194,
+        "protocol": "udp",
+        "servers": ["main", "node_1", "node_2"]
+      }
+    ],
+    "custom_ports": [
+      {
+        "id": 5,
+        "port": 8080,
+        "protocol": "tcp",
+        "servers": ["main", "node_1"],
+        "created_at": "2024-01-15T09:00:00Z"
+      },
+      {
+        "id": 6,
+        "port": 8081,
+        "protocol": "udp",
+        "servers": ["node_2"],
+        "created_at": "2024-01-15T09:15:00Z"
+      }
+    ]
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="add-port">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-post">POST</span>
+<h4 class="font-bold text-lg">افزودن پورت جدید</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/public/ports</span>
+</div>
+<p class="mb-4">این endpoint یک پورت و پروتکل جدید را به یک یا چند سرور به صورت همزمان اضافه کرده و سرویس‌های مربوطه را راه‌اندازی می‌کند.</p>
+<h5 class="font-semibold mb-3">پارامترهای بدنه درخواست (Body):</h5>
+<div class="grid grid-cols-1 gap-3 mb-4">
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-required">اجباری</span>
+<span class="param-name">public_port</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">شماره پورتی که می‌خواهید اضافه کنید.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: عدد صحیح</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-required">اجباری</span>
+<span class="param-name">protocol</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">نوع پروتکل. مقادیر مجاز: "tcp" یا "udp".</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: رشته</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-required">اجباری</span>
+<span class="param-name">server_ids</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">لیستی از شناسه‌های سرورهایی که این پورت باید روی آن‌ها فعال شود.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: آرایه‌ای از رشته‌ها، مثال: `["main", "node_1"]`</p>
+</div>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X POST "https://your-panel-domain.com/api/v1/public/ports" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "public_port": 8080,
+    "protocol": "tcp",
+    "server_ids": ["main", "node_1", "node_2"]
+  }'</code></pre>
+</div>
+<h5 class="font-semibold mt-6 mb-3">پاسخ موفق:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "Port added successfully to specified servers",
+  "data": {
+    "port_id": 7,
+    "port": 8080,
+    "protocol": "tcp",
+    "servers": ["main", "node_1", "node_2"],
+    "installation_status": "in_progress"
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="delete-port-assignment">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-delete">DELETE</span>
+<h4 class="font-bold text-lg">حذف تخصیص پورت از سرور</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/public/ports/assignment</span>
+</div>
+<p class="mb-4">این endpoint یک پورت فرعی را فقط از یک سرور خاص حذف می‌کند، بدون اینکه روی سرورهای دیگر تأثیری بگذارد.</p>
+<h5 class="font-semibold mb-3">پارامترهای بدنه درخواست (Body):</h5>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-required">اجباری</span>
+<span class="param-name">port_id</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">شناسه منحصر به فرد پورت که از API لیست پورت‌ها به دست آمده است.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: عدد صحیح</p>
+</div>
+<div class="param-card">
+<div class="flex items-center mb-2">
+<span class="param-required">اجباری</span>
+<span class="param-name">server_identifier</span>
+</div>
+<p class="text-sm text-slate3-600 dark:text-slate3-400">شناسه سروری که پورت باید از آن حذف شود.</p>
+<p class="text-xs mt-1 text-slate3-500">نوع: رشته</p>
+</div>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X DELETE "https://your-panel-domain.com/api/v1/public/ports/assignment" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "port_id": 5,
+    "server_identifier": "node_1"
+  }'</code></pre>
+</div>
+<h5 class="font-semibold mt-6 mb-3">پاسخ موفق:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "Port assignment removed successfully",
+  "data": {
+    "port_id": 5,
+    "server": "node_1",
+    "removed_services": ["haproxy", "firewall_rules"]
+  }
+}</code></pre>
+</div>
+</article>
+</section>
+<section class="mb-12" id="subs">
+<h2 class="section-title text-2xl md:text-3xl font-extrabold text-brand-800 dark:text-brand-200">نمایندگان (Sub-Admins)</h2>
+<div class="note note-danger mb-6">
+<h5 class="font-semibold flex items-center gap-2 mb-2"><i class="fa-solid fa-shield-halved"></i> سطح دسترسی:</h5>
+<p>تمامی این Endpointها فقط برای کلید ادمین اصلی در دسترس‌اند.</p>
+</div>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="subs-list">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">لیست نمایندگان</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/sub_admins</span>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/sub_admins" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "sub_admins": [
+      {
+        "id": 1,
+        "username": "reseller1",
+        "is_active": true,
+        "max_users_limit": 100,
+        "current_users": 25,
+        "total_usage_quota_gb": 500,
+        "current_usage_gb": 125.5,
+        "expiry_date": "2024-12-31",
+        "allowed_servers": ["node_1", "node_2"],
+        "created_at": "2024-01-01T00:00:00Z"
+      }
+    ]
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="subs-get">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-get">GET</span>
+<h4 class="font-bold text-lg">جزئیات یک نماینده</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/sub_admins/{id}</span>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X GET "https://your-panel-domain.com/api/v1/sub_admins/1" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "username": "reseller1",
+    "is_active": true,
+    "max_users_limit": 100,
+    "current_users": 25,
+    "total_usage_quota_gb": 500,
+    "current_usage_gb": 125.5,
+    "expiry_date": "2024-12-31",
+    "allowed_servers": ["node_1", "node_2"],
+    "notes": "Reseller for USA region",
+    "created_at": "2024-01-01T00:00:00Z",
+    "last_login": "2024-01-15T09:30:00Z"
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="subs-add">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-post">POST</span>
+<h4 class="font-bold text-lg">افزودن نماینده</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/sub_admins</span>
+</div>
+<h5 class="font-semibold mb-3">پارامترهای کلیدی:</h5>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+<div class="param-card"><div class="flex items-center mb-2"><span class="param-required">اجباری</span><span class="param-name">username</span></div></div>
+<div class="param-card"><div class="flex items-center mb-2"><span class="param-required">اجباری</span><span class="param-name">password</span></div></div>
+<div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">is_active</span></div></div>
+<div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">max_users_limit</span></div></div>
+<div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">total_usage_quota_gb</span></div></div>
+<div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">expiry_date (YYYY-MM-DD)</span></div></div>
+<div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">allowed_servers[]</span></div></div>
+<div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">notes</span></div></div>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X POST "https://your-panel-domain.com/api/v1/sub_admins" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "subadmin1",
+    "password": "secure_password_123",
+    "is_active": true,
+    "max_users_limit": 100,
+    "total_usage_quota_gb": 500,
+    "expiry_date": "2024-12-31",
+    "allowed_servers": ["node_1", "node_2"],
+    "notes": "Sub-admin for reseller program"
+  }'</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "Sub-admin created successfully",
+  "data": {
+    "id": 2,
+    "username": "subadmin1",
+    "api_key": "generated_api_key_here",
+    "created_at": "2024-01-15T11:00:00Z"
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="subs-edit">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-put">PUT</span>
+<h4 class="font-bold text-lg">ویرایش نماینده</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/sub_admins/{id}</span>
+</div>
+<h5 class="font-semibold mb-3">پارامترهای قابل ویرایش:</h5><div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4"><div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">username</span></div><p class="text-sm text-slate3-600 dark:text-slate3-400">تغییر نام کاربری.</p><p class="text-xs mt-1 text-slate3-500">نوع: string</p></div><div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">password</span></div><p class="text-sm text-slate3-600 dark:text-slate3-400">تغییر رمز عبور.</p><p class="text-xs mt-1 text-slate3-500">نوع: string</p></div><div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">is_active</span></div><p class="text-sm text-slate3-600 dark:text-slate3-400">فعال/غیرفعال.</p><p class="text-xs mt-1 text-slate3-500">نوع: boolean</p></div><div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">max_users_limit</span></div><p class="text-sm text-slate3-600 dark:text-slate3-400">به‌روزرسانی سقف کاربر.</p><p class="text-xs mt-1 text-slate3-500">نوع: integer</p></div><div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">total_usage_quota_gb</span></div><p class="text-sm text-slate3-600 dark:text-slate3-400">به‌روزرسانی سقف مصرف کل.</p><p class="text-xs mt-1 text-slate3-500">نوع: integer</p></div><div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">expiry_date</span></div><p class="text-sm text-slate3-600 dark:text-slate3-400">تاریخ انقضا.</p><p class="text-xs mt-1 text-slate3-500">نوع: YYYY-MM-DD</p></div><div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">allowed_servers[]</span></div><p class="text-sm text-slate3-600 dark:text-slate3-400">لیست جدید سرورهای مجاز.</p><p class="text-xs mt-1 text-slate3-500">نوع: array&lt;string&gt;</p></div><div class="param-card"><div class="flex items-center mb-2"><span class="param-optional">اختیاری</span><span class="param-name">notes</span></div><p class="text-sm text-slate3-600 dark:text-slate3-400">یادداشت.</p><p class="text-xs mt-1 text-slate3-500">نوع: string</p></div></div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X PUT "https://your-panel-domain.com/api/v1/sub_admins/5" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "updated_subadmin",
+    "password": "new_secure_password",
+    "is_active": false,
+    "max_users_limit": 150,
+    "total_usage_quota_gb": 750,
+    "expiry_date": "2025-06-30",
+    "allowed_servers": ["node_1", "node_2", "node_3"],
+    "notes": "Updated sub-admin details"
+  }'</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "Sub-admin updated successfully",
+  "data": {
+    "id": 5,
+    "username": "updated_subadmin",
+    "changes": {
+      "is_active": false,
+      "max_users_limit": 150,
+      "total_usage_quota_gb": 750,
+      "expiry_date": "2025-06-30"
+    }
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="subs-del">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-delete">DELETE</span>
+<h4 class="font-bold text-lg">حذف نماینده</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/sub_admins/{id}</span>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X DELETE "https://your-panel-domain.com/api/v1/sub_admins/5" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "Sub-admin deleted successfully",
+  "data": {
+    "id": 5,
+    "username": "updated_subadmin"
+  }
+}</code></pre>
+</div>
+</article>
+<article class="glass p-6 rounded-xl border border-slate3-200 dark:border-slate3-700 mb-6 card" id="subs-reset-usage">
+<div class="flex items-center gap-3 mb-4">
+<span class="endpoint-badge badge-post">POST</span>
+<h4 class="font-bold text-lg">ریست مصرف نماینده</h4>
+<span class="text-sm text-slate3-500 mr-auto">/api/v1/sub_admins/{id}/reset_usage</span>
+</div>
+<h5 class="font-semibold mb-3">مثال curl:</h5>
+<div class="code-block">
+<pre class="language-bash"><code>curl -X POST "https://your-panel-domain.com/api/v1/sub_admins/5/reset_usage" \
+  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \
+  -H "Content-Type: application/json"</code></pre>
+</div>
+<h5 class="font-semibold mb-3">پاسخ:</h5>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "success",
+  "message": "Sub-admin usage reset successfully",
+  "data": {
+    "id": 5,
+    "username": "updated_subadmin",
+    "previous_usage_gb": 450.75,
+    "new_usage_gb": 0
+  }
+}</code></pre>
+</div>
+</article>
+</section>
+<section class="mb-12" id="error-codes">
+<h2 class="section-title text-2xl md:text-3xl font-extrabold text-brand-800 dark:text-brand-200">کدهای خطا</h2>
+<div class="glass p-6 md:p-8 rounded-xl border border-slate3-200 dark:border-slate3-700">
+<p class="mb-4">API از کدهای وضعیت استاندارد HTTP برای نشان دادن موفقیت یا شکست درخواست استفاده می‌کند.</p>
+<ul class="list-disc pr-5 mb-4 space-y-2">
+<li><strong>200 OK</strong>: درخواست با موفقیت انجام شد.</li>
+<li><strong>201 Created</strong>: منبع جدید با موفقیت ایجاد شد.</li>
+<li><strong>202 Accepted</strong>: درخواست پذیرفته شد و در پس‌زمینه در حال پردازش است (مانند افزودن نود).</li>
+<li><strong>400 Bad Request</strong>: درخواست نامعتبر است (مثلاً پارامترهای ناقص یا اشتباه).</li>
+<li><strong>401 Unauthorized</strong>: کلید API ارسال نشده است.</li>
+<li><strong>403 Forbidden</strong>: کلید API معتبر است اما دسترسی لازم برای انجام این عمل را ندارد.</li>
+<li><strong>404 Not Found</strong>: منبع درخواستی (مثلاً کاربر یا نود) پیدا نشد.</li>
+<li><strong>409 Conflict</strong>: درخواست به دلیل تداخل با وضعیت فعلی منبع قابل انجام نیست (مثلاً نام کاربری تکراری).</li>
+<li><strong>500 Internal Server Error</strong>: یک خطای پیش‌بینی نشده در سرور رخ داده است.</li>
+</ul>
+<h4 class="text-xl font-bold mb-3 mt-6">ساختار پاسخ خطا</h4>
+<div class="code-block">
+<pre class="language-json"><code>{
+  "status": "error",
+  "message": "Descriptive error message here",
+  "code": "ERROR_CODE",
+  "details": {
+    "field": "additional error details if available"
+  }
+}</code></pre>
+</div>
+</div>
+</section>
+</main>
+</div>
+</div>
+<div class="mobile-nav lg:hidden">
+<div class="flex-nowrap gap-1 overflow-x-hidden items-center justify-between w-full flex">
+<a class="text-center rounded-lg flex-col min-w-0 text-xs items-center flex-1 p-2 flex" href="#status"><i class="fa-solid fa-heart-pulse text-lg mb-1"></i><span>سلامت</span></a>
+<a class="text-center rounded-lg flex-col min-w-0 text-xs items-center flex-1 p-2 flex" href="#users">
+<i class="fa-solid fa-users text-lg mb-1"></i>
+<span>کاربران</span>
+</a>
+<a class="text-center rounded-lg flex-col min-w-0 text-xs items-center flex-1 p-2 flex" href="#nodes">
+<i class="fa-solid fa-server text-lg mb-1"></i>
+<span>نودها</span>
+</a>
+<a class="text-center rounded-lg flex-col min-w-0 text-xs items-center flex-1 p-2 flex" href="#error-codes">
+<i class="fa-solid fa-triangle-exclamation text-lg mb-1"></i>
+<span>خطاها</span>
+</a>
+<a class="text-center rounded-lg flex-col min-w-0 text-xs items-center flex-1 p-2 flex" href="#subs"><i class="fa-solid fa-user-shield text-lg mb-1"></i><span>نمایندگان</span></a></div>
+</div>
+<script>
+    // Theme toggle
+    const themeBtn = document.getElementById('themeBtn');
+    const themeIcon = themeBtn.querySelector('i');
+    
+    // Check for saved theme or default to light
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    if (currentTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      themeIcon.classList.remove('fa-moon');
+      themeIcon.classList.add('fa-sun');
+    }
+    
+    themeBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      
+      if (document.documentElement.classList.contains('dark')) {
+        localStorage.setItem('theme', 'dark');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+      } else {
+        localStorage.setItem('theme', 'light');
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+      }
+    });
+    
+    // Table of contents highlighting
+    const sections = document.querySelectorAll('section[id], article[id]');
+    const navLinks = document.querySelectorAll('.toc-item');
+    
+    function highlightNavLink() {
+      let scrollY = window.pageYOffset;
+      
+      sections.forEach(section => {
+        const sectionHeight = section.offsetHeight;
+        const sectionTop = section.offsetTop - 100;
+        const sectionId = section.getAttribute('id');
+        
+        if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${sectionId}`) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    }
+    
+    window.addEventListener('scroll', highlightNavLink);
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+    
+    // Progress bar
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('progress').style.width = scrolled + '%';
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('docSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        document.querySelectorAll('article, section').forEach(el => {
+          if (!el.id) return; // Skip elements without ID
+          const text = el.textContent.toLowerCase();
+          if (text.includes(searchTerm)) {
+            el.style.display = 'block';
+          } else {
+            el.style.display = 'none';
+          }
+        });
+      });
+      // Shortcut for search
+      window.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement !== searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+        }
+      });
+    }
+    
+    // Initialize Prism for code highlighting
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof Prism !== 'undefined') {
+        Prism.highlightAll();
+      }
+    });
+  </script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const items = document.querySelectorAll('aside nav .toc-item');
+  const sections = Array.from(items).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const activate = id => {
+    items.forEach(a => a.classList.toggle('active', a.getAttribute('href')===`#${id}`));
+  };
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ activate(e.target.id); } });
+  },{rootMargin:'-50% 0px -45% 0px', threshold:0.01});
+  sections.forEach(sec => obs.observe(sec));
+});
+</script><script>
+const megaToggle = document.getElementById('megaToggle');
+const megaMobile = document.getElementById('megaMobile');
+if (megaToggle && megaMobile){
+  megaToggle.addEventListener('click', ()=>{
+    megaMobile.classList.toggle('hidden');
+  });
+}
+// smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click', e=>{
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if(el){
+      e.preventDefault();
+      window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 84, behavior:'smooth'});
+      megaMobile?.classList.add('hidden');
+    }
+  });
+});
+</script><script>
+// Mobile toggle
+const mobileToggle = document.getElementById('mobileToggle');
+const mobilePanel  = document.getElementById('mobilePanel');
+if (mobileToggle && mobilePanel){
+  mobileToggle.addEventListener('click', ()=> mobilePanel.classList.toggle('hidden'));
+}
+// Smooth scroll + close mobile after click
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click', e=>{
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if(el){
+      e.preventDefault();
+      const headerH = document.querySelector('header').offsetHeight || 64;
+      const navH = document.getElementById('topNav').offsetHeight || 40;
+      const offset = headerH + navH + 12;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({top, behavior:'smooth'});
+      mobilePanel?.classList.add('hidden');
+    }
+  });
+});
+</script><script>
+// Close mobile panel on outside click
+document.addEventListener('click', (e)=>{
+  const mp = document.getElementById('mobilePanel');
+  const btn = document.getElementById('mobileToggle');
+  if(!mp || !btn) return;
+  if(!mp.classList.contains('hidden') && !mp.contains(e.target) && !btn.contains(e.target)){
+    mp.classList.add('hidden');
+  }
+});
+</script><script>
+const mobileToggle = document.getElementById('mobileToggle');
+const mobilePanel  = document.getElementById('mobilePanel');
+if (mobileToggle && mobilePanel){
+  mobileToggle.addEventListener('click', ()=> mobilePanel.classList.toggle('hidden'));
+}
+</script></body>
+</html>
