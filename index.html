@@ -138,7 +138,7 @@
             <div class="p-3 border-t border-gray-200/60 dark:border-slate-800/60 mt-auto">
                 <div class="flex items-center gap-2.5 text-[0.6rem] text-gray-400 dark:text-gray-500">
                     <i class="fas fa-shield-alt text-primary-400"></i>
-                    <span>v3.1.2.4</span>
+                    <span>v3.1.3</span>
                     <span class="w-px h-4 bg-gray-300 dark:bg-slate-700"></span>
                     <span><i class="fas fa-circle text-emerald-400 text-[0.4rem] mr-1"></i> Live</span>
                 </div>
@@ -340,7 +340,8 @@
                     { id: 'users', fa: 'کاربران', en: 'Users' },
                     { id: 'sub_admins', fa: 'نمایندگان', en: 'Sub-Admins' },
                     { id: 'nodes', fa: 'سرورها', en: 'Nodes' },
-                    { id: 'ports', fa: 'پورت‌ها', en: 'Ports' },
+                    { id: 'ports', fa: 'اوپن وی پی ان', en: 'OpenVpn' },
+                    { id: 'wireguard', fa: 'وایرگارد', en: 'WireGuard' },
                     { id: 'settings', fa: 'تنظیمات', en: 'Settings' }
                 ],
                 apis: [
@@ -353,20 +354,21 @@
                             { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/users/list_all" \\\n  -H "X-API-KEY: YOUR_API_KEY"` },
                             { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/users/list_all"\nheaders = {"X-API-KEY": "YOUR_API_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
                         ],
-                        response: `{\n  "success": true,\n  "users": [\n    { "username": "user123", "active_connections": 0, "data_limit": 50, "download_bytes": 10240, "is_active": true }\n  ]\n}`
+                        response: `{\n  "success": true,\n  "users": [\n    { "username": "user123", "active_connections": 0, "data_limit": 50, "download_bytes": 10240, "is_active": true, "enable_wg1": true, "wg1_ip": "10.201.0.5", "allowed_wg_instances": ["wg2"] }\n  ]\n}`
                     },
                     { id: 'create_user', category: 'users', method: 'POST', path: '/api/v1/users',
                         title: { fa: 'ایجاد کاربر (تکی/گروهی)', en: 'Create User(s)' },
-                        desc: { fa: 'ساخت اکانت جدید. با ارسال bulk_count چندین کاربر تصادفی به‌طور همزمان بسازید.', en: 'Create a new account or bulk create random users.' },
+                        desc: { fa: 'ساخت اکانت جدید. با ارسال bulk_count چندین کاربر به‌طور همزمان بسازید؛ اگر bulk_prefix هم بدهید نام‌ها به‌صورت دنباله‌دار (مثل vpn001, vpn002) ساخته می‌شوند، در غیر این صورت نام‌های تصادفی ساخته می‌شود. نکته: چون یوزرنیم‌ها در کل پنل یکتا هستند (نه فقط بین کاربران یک نماینده)، اگر با کلید API یک نماینده، یوزرنیمی بسازید که قبلاً توسط نماینده یا ادمین دیگری گرفته شده، پنل خودکار یک عدد تصادفی به انتهای آن اضافه می‌کند و نام نهایی را در پیام پاسخ (message) و created_users اعلام می‌کند. این رفتار فقط برای کلید API نمایندگان است؛ برای ادمین اصلی همچنان خطای تکراری بودن برگردانده می‌شود.', en: 'Create a new account or bulk create users. If bulk_prefix is given, usernames are sequential (e.g. vpn001, vpn002); otherwise random usernames are generated. Note: since usernames are unique across the whole panel (not just per sub-admin), if a sub-admin API key requests a username already taken by another sub-admin or the main admin, the panel automatically appends a random number and reports the final username in the response message and created_users. This only applies to sub-admin API keys; the Main Admin key still gets a duplicate-username error.' },
                         headers: [
                             { name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی API', en: 'API Key' }, allowed: { fa: 'رشته متنی (API Key)', en: 'String (API Key)' } },
                             { name: 'Content-Type', required: true, desc: { fa: 'application/json', en: 'application/json' }, allowed: { fa: 'application/json', en: 'application/json' } }
                         ],
                         bodyParams: [
-                            { name: 'username', type: 'string', conditional: true, desc: { fa: 'نام کاربری (در صورت ساخت تکی اجباری است)', en: 'Username (required if not bulk)' }, allowed: { fa: 'حداکثر 80 کاراکتر، حروف و اعداد و _ -', en: 'Max 80 chars, letters, digits, _ -' }, defaultVal: '—' },
+                            { name: 'username', type: 'string', conditional: true, desc: { fa: 'نام کاربری (در صورت ساخت تکی اجباری است)', en: 'Username (required if not bulk)' }, allowed: { fa: 'حداکثر ۸۰ کاراکتر، فقط حروف و اعداد انگلیسی (بدون _ یا -)', en: 'Max 80 chars, English letters and numbers only (no _ or -)' }, defaultVal: '—' },
                             { name: 'bulk_count', type: 'integer', required: false, desc: { fa: 'تعداد برای ساخت گروهی (حداکثر ۳۰۰)', en: 'Count for bulk creation (max 300)' }, allowed: { fa: '۱ تا ۳۰۰', en: '1 to 300' }, defaultVal: '—' },
+                            { name: 'bulk_prefix', type: 'string', required: false, desc: { fa: 'پیشوند دلخواه برای ساخت گروهی. اگر داده شود، نام‌ها دنباله‌دار ساخته می‌شوند (مثلاً vpn001، vpn002، ...) و ادامه‌ی بالاترین شماره‌ی موجود با همان پیشوند خواهد بود. اگر خالی باشد، نام‌های تصادفی (userXXXXXX) ساخته می‌شوند', en: 'Optional prefix for bulk creation. If given, usernames are sequential (e.g. vpn001, vpn002, ...), continuing from the highest existing number with that prefix. If empty, random usernames (userXXXXXX) are generated' }, allowed: { fa: 'فقط حروف و اعداد انگلیسی', en: 'English letters and numbers only' }, defaultVal: '—' },
                             { name: 'max_clients', type: 'integer', required: false, desc: { fa: 'تعداد کاربر همزمان (پیش‌فرض 1)', en: 'Max concurrent clients (default 1)' }, allowed: { fa: 'عدد صحیح ≥ ۱', en: 'Integer ≥ 1' }, defaultVal: '1' },
-                            { name: 'data_limit', type: 'integer', required: false, desc: { fa: 'محدودیت حجم (GB یا MB)', en: 'Data limit (GB or MB)' }, allowed: { fa: 'عدد صحیح ≥ ۰ (۰ یعنی نامحدود)', en: 'Integer ≥ 0 (0 = unlimited)' }, defaultVal: '—' },
+                            { name: 'data_limit', type: 'number', required: false, desc: { fa: 'محدودیت حجم، نسبت به data_limit_unit (اعشار تا ۲ رقم مجاز)', en: 'Data limit, relative to data_limit_unit (up to 2 decimal places)' }, allowed: { fa: 'عدد اعشاری > ۰ با حداکثر ۲ رقم اعشار، مثل 0.5 یا 10.25 (خالی/۰ یعنی نامحدود؛ بیش از ۲ رقم اعشار خطا می‌دهد)', en: 'Decimal number > 0 with at most 2 decimal places, e.g. 0.5 or 10.25 (empty/0 = unlimited; more than 2 decimals returns an error)' }, defaultVal: '—' },
                             { name: 'data_limit_unit', type: 'string', required: false, desc: { fa: 'واحد حجم (GB یا MB) (پیش‌فرض GB)', en: 'Data limit unit (GB or MB) default GB' }, allowed: { fa: 'GB یا MB', en: 'GB or MB' }, defaultVal: 'GB' },
                             { name: 'activation_type', type: 'string', required: false, desc: { fa: 'نوع فعال‌سازی: fixed_date یا flexible_days (پیش‌فرض fixed_date)', en: 'fixed_date OR flexible_days (default fixed_date)' }, allowed: { fa: 'fixed_date, flexible_days', en: 'fixed_date, flexible_days' }, defaultVal: 'fixed_date' },
                             { name: 'expiry_date_str', type: 'string (YYYY-MM-DD)', conditional: true, desc: { fa: 'تاریخ انقضا (در صورت fixed_date)', en: 'Expiry date YYYY-MM-DD (for fixed_date)' }, allowed: { fa: 'فرمت YYYY-MM-DD (مثلاً 2026-12-31)', en: 'Format YYYY-MM-DD (e.g. 2026-12-31)' }, defaultVal: '—' },
@@ -374,27 +376,34 @@
                             { name: 'pending_activation_days', type: 'integer', conditional: true, desc: { fa: 'روزهای pending برای flexible_days', en: 'Pending activation days for flexible_days' }, allowed: { fa: 'عدد صحیح ≥ ۱', en: 'Integer ≥ 1' }, defaultVal: '—' },
                             { name: 'nodes', type: 'array of integers', required: false, desc: { fa: 'لیست ID نودهای مجاز', en: 'Allowed Node IDs' }, allowed: { fa: 'آرایه‌ای از ID‌های عددی (مثلاً [1,3,5])', en: 'Array of integers (e.g. [1,3,5])' }, defaultVal: '—' },
                             { name: 'enable_l2tp', type: 'boolean', required: false, desc: { fa: 'فعال‌سازی L2TP', en: 'Enable L2TP' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'false' },
+                            { name: 'l2tp_password', type: 'string', required: false, desc: { fa: 'رمز L2TP (اگر خالی باشد خودکار ساخته می‌شود)', en: 'L2TP password (auto-generated if omitted)' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: '—' },
                             { name: 'enable_cisco', type: 'boolean', required: false, desc: { fa: 'فعال‌سازی Cisco', en: 'Enable Cisco' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'false' },
-                            { name: 'enable_wg1', type: 'boolean', required: false, desc: { fa: 'فعال‌سازی WireGuard', en: 'Enable WireGuard' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'false' },
-                            { name: 'enable_openvpn', type: 'boolean', required: false, desc: { fa: 'فعال‌سازی OpenVPN (پیش‌فرض true)', en: 'Enable OpenVPN (default true)' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'true' }
+                            { name: 'cisco_password', type: 'string', required: false, desc: { fa: 'رمز Cisco (اگر خالی باشد خودکار ساخته می‌شود)', en: 'Cisco password (auto-generated if omitted)' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: '—' },
+                            { name: 'enable_wg1', type: 'boolean', required: false, desc: { fa: 'فعال‌سازی WireGuard پیش‌فرض (wg1)', en: 'Enable default WireGuard (wg1)' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'false' },
+                            { name: 'wg_instances', type: 'array of strings', required: false, desc: { fa: 'لیست وایرگاردهای اضافه (wg2 به بعد) که کاربر بهشون دسترسی داره. معادل selected_wg_instances هم پذیرفته می‌شود. برای wg1 از enable_wg1 استفاده کنید', en: 'List of additional WireGuard instances (wg2+) to grant access to. Alias selected_wg_instances also accepted. Use enable_wg1 for the default instance' }, allowed: { fa: 'آرایه‌ای از نام instance ها (مثلاً ["wg2", "wg3"])', en: 'Array of instance names (e.g. ["wg2", "wg3"])' }, defaultVal: '[]' },
+                            { name: 'enable_openvpn', type: 'boolean', required: false, desc: { fa: 'فعال‌سازی OpenVPN (پیش‌فرض true)', en: 'Enable OpenVPN (default true)' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'true' },
+                            { name: 'notes', type: 'string', required: false, desc: { fa: 'یادداشت داخلی برای این کاربر', en: 'Internal note for this user' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: '—' },
+                            { name: 'sub_admin_id', type: 'integer', required: false, desc: { fa: 'اختصاص کاربر به یک نماینده خاص (فقط با کلید ادمین کل قابل استفاده است)', en: 'Assign the user to a specific sub-admin (Main Admin API Key only)' }, allowed: { fa: 'عدد صحیح (ID نماینده)', en: 'Integer (Sub-Admin ID)' }, defaultVal: '—' }
                         ],
                         examples: [
                             { lang: 'cURL (Single - Basic)', code: `curl -X POST "https://API_DOMAIN/api/v1/users" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "new_user", "max_clients": 2, "data_limit": 30, "data_limit_unit": "GB"}'` },
                             { lang: 'cURL (Bulk - 5 Users)', code: `curl -X POST "https://API_DOMAIN/api/v1/users" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"bulk_count": 5, "max_clients": 1, "activation_type": "fixed_date", "expiry_date_str": "2026-12-31", "enable_l2tp": true}'` },
-                            { lang: 'cURL (Flexible Days + WG)', code: `curl -X POST "https://API_DOMAIN/api/v1/users" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "flex_user", "activation_type": "flexible_days", "pending_activation_days": 30, "enable_wg1": true, "enable_openvpn": false, "nodes": [1, 3]}'` }
+                            { lang: 'cURL (Bulk - Sequential Prefix)', code: `curl -X POST "https://API_DOMAIN/api/v1/users" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"bulk_count": 5, "bulk_prefix": "vpn", "max_clients": 1}'` },
+                            { lang: 'cURL (Flexible Days + WG)', code: `curl -X POST "https://API_DOMAIN/api/v1/users" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "flex_user", "activation_type": "flexible_days", "pending_activation_days": 30, "enable_wg1": true, "enable_openvpn": false, "nodes": [1, 3]}'` },
+                            { lang: 'cURL (wg1 + wg2 + wg3)', code: `curl -X POST "https://API_DOMAIN/api/v1/users" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "wg_user", "enable_wg1": true, "wg_instances": ["wg2", "wg3"], "notes": "Created via API"}'` }
                         ],
                         response: `{\n  "success": true,\n  "message": "1 user(s) created.",\n  "created_users": ["new_user"]\n}`
                     },
                     { id: 'get_user_info', category: 'users', method: 'GET', path: '/api/v1/users/<username>',
                         title: { fa: 'دریافت اطلاعات یک کاربر', en: 'Get Single User Info' },
-                        desc: { fa: 'دریافت جزئیات مصرف، وضعیت آنلاین بودن و کانفیگ‌های مستقیم.', en: 'Get usage details, online status and direct configs of a specific user.' },
+                        desc: { fa: 'دریافت جزئیات مصرف، وضعیت آنلاین بودن و کانفیگ‌های مستقیم. wg1_servers مربوط به وایرگارد پیش‌فرض است؛ allowed_wg_instances لیست نام وایرگاردهای اضافه‌ای است که کاربر بهشون دسترسی داره و wg_instances سرورهای هر کدوم رو برمی‌گردونه.', en: 'Get usage details, online status and direct configs of a specific user. wg1_servers is for the default WireGuard; allowed_wg_instances lists the extra WireGuard instances (wg2+) the user has access to, and wg_instances returns each one\'s servers.' },
                         headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی', en: 'API Key' }, allowed: { fa: 'رشته متنی (API Key)', en: 'String (API Key)' } }],
                         pathParams: [{ name: 'username', desc: { fa: 'نام کاربری', en: 'Username' }, allowed: { fa: 'نام کاربری موجود', en: 'Existing username' } }],
                         examples: [
                             { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/users/ali_test" \\\n  -H "X-API-KEY: YOUR_API_KEY"` },
                             { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/users/ali_test"\nheaders = {"X-API-KEY": "YOUR_API_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
                         ],
-                        response: `{\n  "success": true,\n  "username": "ali_test",\n  "is_active": true,\n  "is_online": false,\n  "total_traffic_bytes": 1500450,\n  "openvpn_servers": [],\n  "wireguard_config": { "enabled": true, "servers": [] }\n}`
+                        response: `{\n  "success": true,\n  "username": "ali_test",\n  "is_active": true,\n  "is_online": false,\n  "total_traffic_bytes": 1500450,\n  "openvpn_servers": [],\n  "enable_wg1": true,\n  "wg1_ip": "10.201.0.5",\n  "wg1_public_key": "...",\n  "wg1_servers": [],\n  "allowed_wg_instances": ["wg2"],\n  "wg_instances": [{"instance": "wg2", "servers": []}]\n}`
                     },
                     { id: 'edit_user', category: 'users', method: 'PUT', path: '/api/v1/users/<username>',
                         title: { fa: 'ویرایش کاربر', en: 'Edit User' },
@@ -406,21 +415,30 @@
                         pathParams: [{ name: 'username', desc: { fa: 'نام کاربری', en: 'Username' }, allowed: { fa: 'نام کاربری موجود', en: 'Existing username' } }],
                         bodyParams: [
                             { name: 'max_clients', type: 'integer', required: false, desc: { fa: 'تعداد کلاینت همزمان', en: 'Max concurrent clients' }, allowed: { fa: 'عدد صحیح ≥ ۱', en: 'Integer ≥ 1' }, defaultVal: '—' },
-                            { name: 'data_limit', type: 'integer', required: false, desc: { fa: 'محدودیت حجم', en: 'Data limit' }, allowed: { fa: 'عدد صحیح ≥ ۰ (۰ یعنی نامحدود)', en: 'Integer ≥ 0 (0 = unlimited)' }, defaultVal: '—' },
+                            { name: 'data_limit', type: 'number', required: false, desc: { fa: 'محدودیت حجم، نسبت به data_limit_unit (اعشار تا ۲ رقم مجاز)', en: 'Data limit, relative to data_limit_unit (up to 2 decimal places)' }, allowed: { fa: 'عدد اعشاری > ۰ با حداکثر ۲ رقم اعشار (خالی/۰ یعنی نامحدود؛ بیش از ۲ رقم اعشار خطا می‌دهد)', en: 'Decimal number > 0 with at most 2 decimal places (empty/0 = unlimited; more than 2 decimals returns an error)' }, defaultVal: '—' },
                             { name: 'data_limit_unit', type: 'string', required: false, desc: { fa: 'واحد: GB یا MB', en: 'Unit: GB or MB' }, allowed: { fa: 'GB یا MB', en: 'GB or MB' }, defaultVal: '—' },
+                            { name: 'notes', type: 'string', required: false, desc: { fa: 'یادداشت داخلی برای این کاربر', en: 'Internal note for this user' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: '—' },
+                            { name: 'activation_type', type: 'string', required: false, desc: { fa: 'نوع فعال‌سازی: fixed_date یا flexible_days', en: 'fixed_date or flexible_days' }, allowed: { fa: 'fixed_date, flexible_days', en: 'fixed_date, flexible_days' }, defaultVal: '—' },
+                            { name: 'pending_activation_days', type: 'integer', required: false, desc: { fa: 'روزهای pending برای flexible_days', en: 'Pending activation days for flexible_days' }, allowed: { fa: 'عدد صحیح ≥ ۱', en: 'Integer ≥ 1' }, defaultVal: '—' },
+                            { name: 'expiry_date', type: 'string (YYYY-MM-DD)', required: false, desc: { fa: 'تاریخ انقضا (معادل expiry_date_str)', en: 'Expiry date (alias of expiry_date_str)' }, allowed: { fa: 'فرمت YYYY-MM-DD', en: 'Format YYYY-MM-DD' }, defaultVal: '—' },
                             { name: 'expiry_date_str', type: 'string (YYYY-MM-DD)', required: false, desc: { fa: 'تاریخ انقضا', en: 'Expiry date' }, allowed: { fa: 'فرمت YYYY-MM-DD', en: 'Format YYYY-MM-DD' }, defaultVal: '—' },
-                            { name: 'nodes', type: 'array of integers', required: false, desc: { fa: 'لیست نودهای مجاز', en: 'List of allowed nodes' }, allowed: { fa: 'آرایه‌ای از ID‌های عددی', en: 'Array of integers' }, defaultVal: '—' },
+                            { name: 'nodes', type: 'array of integers', required: false, desc: { fa: 'لیست نودهای مجاز (معادل allowed_nodes)', en: 'List of allowed nodes (alias allowed_nodes)' }, allowed: { fa: 'آرایه‌ای از ID‌های عددی', en: 'Array of integers' }, defaultVal: '—' },
                             { name: 'enable_l2tp', type: 'boolean', required: false, desc: { fa: 'فعال/غیرفعال L2TP', en: 'Enable/Disable L2TP' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
+                            { name: 'l2tp_password', type: 'string', required: false, desc: { fa: 'رمز جدید L2TP', en: 'New L2TP password' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: '—' },
                             { name: 'enable_cisco', type: 'boolean', required: false, desc: { fa: 'فعال/غیرفعال Cisco', en: 'Enable/Disable Cisco' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
-                            { name: 'enable_wg1', type: 'boolean', required: false, desc: { fa: 'فعال/غیرفعال WireGuard', en: 'Enable/Disable WireGuard' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
+                            { name: 'cisco_password', type: 'string', required: false, desc: { fa: 'رمز جدید Cisco', en: 'New Cisco password' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: '—' },
+                            { name: 'enable_wg1', type: 'boolean', required: false, desc: { fa: 'فعال/غیرفعال WireGuard پیش‌فرض (wg1)', en: 'Enable/Disable default WireGuard (wg1)' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
+                            { name: 'wg_instances', type: 'array of strings', required: false, desc: { fa: 'جایگزینی کامل لیست وایرگاردهای اضافه (wg2 به بعد) کاربر. معادل selected_wg_instances هم پذیرفته می‌شود', en: 'Fully replaces the user\'s additional WireGuard instances (wg2+). Alias selected_wg_instances also accepted' }, allowed: { fa: 'آرایه‌ای از نام instance ها (مثلاً ["wg2"])', en: 'Array of instance names (e.g. ["wg2"])' }, defaultVal: '—' },
                             { name: 'enable_openvpn', type: 'boolean', required: false, desc: { fa: 'فعال/غیرفعال OpenVPN', en: 'Enable/Disable OpenVPN' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
                             { name: 'reset_activation', type: 'boolean', required: false, desc: { fa: 'صفر کردن ترافیک مصرفی و زمان استارت', en: 'Reset traffic and first connection date' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
-                            { name: 'is_disabled', type: 'boolean', required: false, desc: { fa: 'مسدود سازی دستی', en: 'Manual disable user' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' }
+                            { name: 'is_disabled', type: 'boolean', required: false, desc: { fa: 'مسدود سازی دستی (true) یا فعال‌سازی مجدد (false)', en: 'Manually disable (true) or re-enable (false) the user' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' }
                         ],
                         examples: [
                             { lang: 'cURL (Update Limit)', code: `curl -X PUT "https://API_DOMAIN/api/v1/users/ali_test" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"data_limit": 100, "data_limit_unit": "GB"}'` },
                             { lang: 'cURL (Toggle Protocols)', code: `curl -X PUT "https://API_DOMAIN/api/v1/users/ali_test" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"enable_l2tp": true, "enable_cisco": true, "enable_wg1": false}'` },
-                            { lang: 'cURL (Reset + Extend)', code: `curl -X PUT "https://API_DOMAIN/api/v1/users/ali_test" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"reset_activation": true, "expiry_date_str": "2027-01-01", "max_clients": 3}'` }
+                            { lang: 'cURL (Reset + Extend)', code: `curl -X PUT "https://API_DOMAIN/api/v1/users/ali_test" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"reset_activation": true, "expiry_date_str": "2027-01-01", "max_clients": 3}'` },
+                            { lang: 'cURL (WireGuard wg1 + wg2)', code: `curl -X PUT "https://API_DOMAIN/api/v1/users/ali_test" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"enable_wg1": true, "wg_instances": ["wg2"]}'` },
+                            { lang: 'cURL (Disable / Re-enable)', code: `curl -X PUT "https://API_DOMAIN/api/v1/users/ali_test" \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"is_disabled": true}'` }
                         ],
                         response: `{\n  "success": true,\n  "message": "User updated successfully",\n  "user": { ... }\n}`
                     },
@@ -481,14 +499,25 @@
                     },
                     { id: 'all_configs', category: 'users', method: 'GET', path: '/api/v1/users/<username>/all_ovpn_links',
                         title: { fa: 'دریافت فایل‌ها و کانفیگ‌ها', en: 'Get All Configs & Links' },
-                        desc: { fa: 'دریافت تمامی لینک‌های OVPN و متن کانفیگ‌های L2TP/Cisco/WireGuard.', en: 'Get OVPN links, L2TP/Cisco/WireGuard configs.' },
+                        desc: { fa: 'دریافت تمامی لینک‌های OVPN و متن کانفیگ‌های L2TP/Cisco/WireGuard. wireguard_config فقط مربوط به وایرگارد پیش‌فرض (wg1) است؛ اگر کاربر به وایرگاردهای اضافه (wg2 به بعد) هم دسترسی داشته باشد، کانفیگ کامل هر کدام در آرایه‌ی wireguard_instances برگردانده می‌شود.', en: 'Get OVPN links, L2TP/Cisco/WireGuard configs. wireguard_config covers only the default WireGuard (wg1); if the user also has access to extra instances (wg2+), each of their full configs is returned in the wireguard_instances array.' },
                         headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی', en: 'API Key' }, allowed: { fa: 'رشته متنی (API Key)', en: 'String (API Key)' } }],
                         pathParams: [{ name: 'username', desc: { fa: 'نام کاربری', en: 'Username' }, allowed: { fa: 'نام کاربری موجود', en: 'Existing username' } }],
                         examples: [
                             { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/users/ali_test/all_ovpn_links" \\\n  -H "X-API-KEY: YOUR_API_KEY"` },
                             { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/users/ali_test/all_ovpn_links"\nheaders = {"X-API-KEY": "YOUR_API_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
                         ],
-                        response: `{\n  "success": true,\n  "download_links": [],\n  "l2tp_config": {"enabled": false},\n  "cisco_config": {"enabled": false},\n  "wireguard_config": {"enabled": false}\n}`
+                        response: `{\n  "success": true,\n  "download_links": [],\n  "l2tp_config": {"enabled": false},\n  "cisco_config": {"enabled": false},\n  "wireguard_config": {"enabled": true, "username": "ali_test", "private_key": "...", "internal_ip": "10.201.0.5", "servers": [{"name": "Main Server", "address": "example.com:51821", "download_url": "https://API_DOMAIN/download_wg1/...", "filename": "ali_test-Main-Server.conf", "full_config_text": "[Interface]..."}]},\n  "wireguard_instances": [{"instance": "wg2", "display_name": "wg2", "enabled": true, "username": "ali_test", "private_key": "...", "internal_ip": "10.202.0.5", "servers": [{"name": "Main Server", "address": "example.com:51822", "download_url": "https://API_DOMAIN/download_wg_instance/wg2/...", "filename": "ali_test-Main-Server-wg2.conf", "full_config_text": "[Interface]..."}]}]\n}`
+                    },
+                    { id: 'wg1_files', category: 'users', method: 'GET', path: '/api/v1/users/<username>/wg1_files',
+                        title: { fa: 'لینک دانلود فایل‌های wg1 کاربر', en: 'Get User wg1 Download Links' },
+                        desc: { fa: 'مخصوص وایرگارد پیش‌فرض (wg1): برای هر سروری که کاربر بهش دسترسی داره (سرور اصلی، تانل‌ها، نودها) یک لینک دانلود مستقیم .conf و نام فایل امن برمی‌گردونه، بدون افشای متن کامل کانفیگ در پاسخ. اگر wg1 برای کاربر فعال نباشه wg1_enabled برابر false و servers خالی برمی‌گرده. نیاز به کلید ادمین کل یا کلید نماینده‌ی مالک همان کاربر.', en: 'Specific to the default WireGuard (wg1): returns a direct .conf download link and a safe filename for every server the user has access to (main, tunnels, nodes), without exposing the full config text in the response. If wg1 is not enabled for the user, wg1_enabled is false and servers is empty. Requires the main admin API key, or a sub-admin API key that owns this user.' },
+                        headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی', en: 'API Key' }, allowed: { fa: 'رشته متنی (API Key)', en: 'String (API Key)' } }],
+                        pathParams: [{ name: 'username', desc: { fa: 'نام کاربری', en: 'Username' }, allowed: { fa: 'نام کاربری موجود', en: 'Existing username' } }],
+                        examples: [
+                            { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/users/ali_test/wg1_files" \\\n  -H "X-API-KEY: YOUR_API_KEY"` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/users/ali_test/wg1_files"\nheaders = {"X-API-KEY": "YOUR_API_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
+                        ],
+                        response: `{\n  "success": true,\n  "wg1_enabled": true,\n  "servers": [\n    { "name": "Main Server", "address": "example.com:51821", "server_type": "main", "endpoint_id": "main", "is_tunnel": false, "is_main": true, "download_url": "https://API_DOMAIN/download_wg1/.../ali_test/main/main", "filename": "ali_test-Main-Server.conf" }\n  ]\n}`
                     },
 
                     // ==================== SUB-ADMINS ====================
@@ -511,7 +540,7 @@
                             { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/sub_admins/1" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY"` },
                             { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/sub_admins/1"\nheaders = {"X-API-KEY": "YOUR_MAIN_ADMIN_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
                         ],
-                        response: `{\n  "success": true,\n  "sub_admin": { "id": 1, "username": "reseller1", "max_users_limit": 100, "total_data_used_bytes": 1048576 }\n}`
+                        response: `{\n  "success": true,\n  "sub_admin": { "id": 1, "username": "reseller1", "max_users_limit": 100, "total_data_used_bytes": 1048576, "allow_openvpn": true, "allow_l2tp": true, "allow_cisco": true, "allow_wg1": true, "allowed_wg_instances": ["wg2"] }\n}`
                     },
                     { id: 'create_sub_admin', category: 'sub_admins', method: 'POST', path: '/api/v1/sub_admins',
                         title: { fa: 'ایجاد نماینده', en: 'Create Sub-Admin' },
@@ -525,7 +554,7 @@
                             { name: 'password', type: 'string', required: true, desc: { fa: 'رمز عبور', en: 'Password' }, allowed: { fa: 'حداقل ۶ کاراکتر', en: 'Minimum 6 chars' }, defaultVal: '—' },
                             { name: 'is_active', type: 'boolean', required: false, desc: { fa: 'فعال (پیش‌فرض true)', en: 'Active (default true)' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'true' },
                             { name: 'max_users_limit', type: 'integer', required: false, desc: { fa: 'حداکثر تعداد کاربر', en: 'Maximum number of users' }, allowed: { fa: 'عدد صحیح ≥ ۰ (۰ یعنی نامحدود)', en: 'Integer ≥ 0 (0 = unlimited)' }, defaultVal: '—' },
-                            { name: 'total_usage_quota_gb', type: 'integer', required: false, desc: { fa: 'سقف مصرف (GB)', en: 'Usage quota (GB)' }, allowed: { fa: 'عدد صحیح ≥ ۰ (۰ یعنی نامحدود)', en: 'Integer ≥ 0 (0 = unlimited)' }, defaultVal: '—' },
+                            { name: 'total_usage_quota_gb', type: 'number', required: false, desc: { fa: 'سقف مصرف بر حسب گیگابایت (اعشار تا ۲ رقم مجاز)', en: 'Usage quota in GB (up to 2 decimal places)' }, allowed: { fa: 'عدد اعشاری > ۰ با حداکثر ۲ رقم اعشار (خالی/۰ یعنی نامحدود؛ بیش از ۲ رقم اعشار خطا می‌دهد)', en: 'Decimal number > 0 with at most 2 decimal places (empty/0 = unlimited; more than 2 decimals returns an error)' }, defaultVal: '—' },
                             { name: 'expiry_date', type: 'string (YYYY-MM-DD)', required: false, desc: { fa: 'تاریخ انقضا', en: 'Expiry date' }, allowed: { fa: 'فرمت YYYY-MM-DD', en: 'Format YYYY-MM-DD' }, defaultVal: '—' },
                             { name: 'allowed_servers', type: 'array', required: false, desc: { fa: 'لیست سرورهای مجاز', en: 'Allowed servers' }, allowed: { fa: 'آرایه‌ای از شناسه‌های سرور (مثلاً ["main_config_0", "node_config_5"])', en: 'Array of server identifiers (e.g. ["main_config_0", "node_config_5"])' }, defaultVal: '—' },
                             { name: 'subscription_port', type: 'integer', required: false, desc: { fa: 'پورت اشتراک اختصاصی', en: 'Subscription port' }, allowed: { fa: 'عدد صحیح بین ۱ تا ۶۵۵۳۵ (به جز پورت‌های سیستمی و پورت‌های اشغال شده)', en: 'Integer 1-65535 (except reserved/used ports)' }, defaultVal: '—' },
@@ -534,12 +563,19 @@
                             { name: 'allocation_mode', type: 'string', required: false, desc: { fa: 'standard یا credit (پیش‌فرض standard)', en: 'standard or credit (default standard)' }, allowed: { fa: 'standard, credit', en: 'standard, credit' }, defaultVal: 'standard' },
                             { name: 'price_per_gb', type: 'float', required: false, desc: { fa: 'قیمت هر GB (در حالت credit)', en: 'Price per GB (credit mode)' }, allowed: { fa: 'عدد اعشاری ≥ ۰', en: 'Decimal ≥ 0' }, defaultVal: '0.0' },
                             { name: 'wallet_balance', type: 'float', required: false, desc: { fa: 'موجودی کیف پول (credit)', en: 'Wallet balance (credit)' }, allowed: { fa: 'عدد اعشاری ≥ ۰', en: 'Decimal ≥ 0' }, defaultVal: '0.0' },
-                            { name: 'currency_unit', type: 'string', required: false, desc: { fa: 'واحد ارز (پیش‌فرض TOMAN)', en: 'Currency unit (default TOMAN)' }, allowed: { fa: 'هر رشته متنی (مثلاً TOMAN, USD, IRR, EUR)', en: 'Any string (e.g. TOMAN, USD, IRR, EUR)' }, defaultVal: 'TOMAN' }
+                            { name: 'currency_unit', type: 'string', required: false, desc: { fa: 'واحد ارز (پیش‌فرض TOMAN)', en: 'Currency unit (default TOMAN)' }, allowed: { fa: 'هر رشته متنی (مثلاً TOMAN, USD, IRR, EUR)', en: 'Any string (e.g. TOMAN, USD, IRR, EUR)' }, defaultVal: 'TOMAN' },
+                            { name: 'notes', type: 'string', required: false, desc: { fa: 'یادداشت داخلی برای این نماینده', en: 'Internal note for this sub-admin' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: '—' },
+                            { name: 'allow_openvpn', type: 'boolean', required: false, desc: { fa: 'دسترسی کاربران این نماینده به OpenVPN', en: 'Whether this sub-admin\'s users can access OpenVPN' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'true' },
+                            { name: 'allow_l2tp', type: 'boolean', required: false, desc: { fa: 'دسترسی کاربران این نماینده به L2TP', en: 'Whether this sub-admin\'s users can access L2TP' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'true' },
+                            { name: 'allow_cisco', type: 'boolean', required: false, desc: { fa: 'دسترسی کاربران این نماینده به Cisco', en: 'Whether this sub-admin\'s users can access Cisco' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'true' },
+                            { name: 'allow_wg1', type: 'boolean', required: false, desc: { fa: 'دسترسی کاربران این نماینده به WireGuard پیش‌فرض (wg1)', en: 'Whether this sub-admin\'s users can access default WireGuard (wg1)' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: 'true' },
+                            { name: 'allowed_wg_instances', type: 'array of strings', required: false, desc: { fa: 'لیست وایرگاردهای اضافه (wg2 به بعد) که این نماینده اجازه واگذاری‌شون به کاربراش رو داره', en: 'List of additional WireGuard instances (wg2+) this sub-admin is allowed to grant to their users' }, allowed: { fa: 'آرایه‌ای از نام instance ها (مثلاً ["wg2", "wg3"])', en: 'Array of instance names (e.g. ["wg2", "wg3"])' }, defaultVal: '[]' }
                         ],
                         examples: [
                             { lang: 'cURL (Standard)', code: `curl -X POST "https://API_DOMAIN/api/v1/sub_admins" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "reseller2", "password": "securepass", "max_users_limit": 50, "total_usage_quota_gb": 100}'` },
                             { lang: 'cURL (Credit Mode)', code: `curl -X POST "https://API_DOMAIN/api/v1/sub_admins" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "credit_user", "password": "pass", "allocation_mode": "credit", "price_per_gb": 0.5, "wallet_balance": 20, "currency_unit": "USD"}'` },
-                            { lang: 'cURL (With Custom Path & Ports)', code: `curl -X POST "https://API_DOMAIN/api/v1/sub_admins" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "custom_reseller", "password": "123456", "panel_path": "my_reseller", "subscription_port": 2083, "panel_port": 8443, "allowed_servers": ["main_config_0", "node_config_1"]}'` }
+                            { lang: 'cURL (With Custom Path & Ports)', code: `curl -X POST "https://API_DOMAIN/api/v1/sub_admins" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "custom_reseller", "password": "123456", "panel_path": "my_reseller", "subscription_port": 2083, "panel_port": 8443, "allowed_servers": ["main_config_0", "node_config_1"]}'` },
+                            { lang: 'cURL (Restrict Protocols + WG2)', code: `curl -X POST "https://API_DOMAIN/api/v1/sub_admins" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "wg_reseller", "password": "securepass", "allow_cisco": false, "allow_l2tp": false, "allow_wg1": true, "allowed_wg_instances": ["wg2"]}'` }
                         ],
                         response: `{\n  "success": true,\n  "message": "Sub-admin created.",\n  "sub_admin": { ... }\n}`
                     },
@@ -556,7 +592,7 @@
                             { name: 'password', type: 'string', required: false, desc: { fa: 'رمز عبور جدید', en: 'New password' }, allowed: { fa: 'حداقل ۶ کاراکتر', en: 'Minimum 6 chars' }, defaultVal: '—' },
                             { name: 'is_active', type: 'boolean', required: false, desc: { fa: 'فعال/غیرفعال', en: 'Enable/Disable' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
                             { name: 'max_users_limit', type: 'integer', required: false, desc: { fa: 'حداکثر کاربر', en: 'Max users' }, allowed: { fa: 'عدد صحیح ≥ ۰', en: 'Integer ≥ 0' }, defaultVal: '—' },
-                            { name: 'total_usage_quota_gb', type: 'integer', required: false, desc: { fa: 'سقف مصرف', en: 'Usage quota' }, allowed: { fa: 'عدد صحیح ≥ ۰', en: 'Integer ≥ 0' }, defaultVal: '—' },
+                            { name: 'total_usage_quota_gb', type: 'number', required: false, desc: { fa: 'سقف مصرف بر حسب گیگابایت (اعشار تا ۲ رقم مجاز)', en: 'Usage quota in GB (up to 2 decimal places)' }, allowed: { fa: 'عدد اعشاری > ۰ با حداکثر ۲ رقم اعشار (خالی/۰ یعنی نامحدود؛ بیش از ۲ رقم اعشار خطا می‌دهد)', en: 'Decimal number > 0 with at most 2 decimal places (empty/0 = unlimited; more than 2 decimals returns an error)' }, defaultVal: '—' },
                             { name: 'expiry_date', type: 'string (YYYY-MM-DD)', required: false, desc: { fa: 'تاریخ انقضا', en: 'Expiry date' }, allowed: { fa: 'فرمت YYYY-MM-DD', en: 'Format YYYY-MM-DD' }, defaultVal: '—' },
                             { name: 'allowed_servers', type: 'array', required: false, desc: { fa: 'سرورهای مجاز', en: 'Allowed servers' }, allowed: { fa: 'آرایه‌ای از شناسه‌های سرور', en: 'Array of server identifiers' }, defaultVal: '—' },
                             { name: 'subscription_port', type: 'integer', required: false, desc: { fa: 'پورت اشتراک', en: 'Subscription port' }, allowed: { fa: 'عدد صحیح بین ۱ تا ۶۵۵۳۵ (به جز پورت‌های اشغال شده)', en: 'Integer 1-65535 (except used ports)' }, defaultVal: '—' },
@@ -565,12 +601,19 @@
                             { name: 'allocation_mode', type: 'string', required: false, desc: { fa: 'standard یا credit', en: 'standard or credit' }, allowed: { fa: 'standard, credit', en: 'standard, credit' }, defaultVal: '—' },
                             { name: 'price_per_gb', type: 'float', required: false, desc: { fa: 'قیمت هر GB', en: 'Price per GB' }, allowed: { fa: 'عدد اعشاری ≥ ۰', en: 'Decimal ≥ 0' }, defaultVal: '—' },
                             { name: 'wallet_balance', type: 'float', required: false, desc: { fa: 'موجودی کیف پول', en: 'Wallet balance' }, allowed: { fa: 'عدد اعشاری ≥ ۰', en: 'Decimal ≥ 0' }, defaultVal: '—' },
-                            { name: 'currency_unit', type: 'string', required: false, desc: { fa: 'واحد ارز', en: 'Currency unit' }, allowed: { fa: 'هر رشته متنی (مثلاً TOMAN, USD, IRR)', en: 'Any string (e.g. TOMAN, USD, IRR)' }, defaultVal: '—' }
+                            { name: 'currency_unit', type: 'string', required: false, desc: { fa: 'واحد ارز', en: 'Currency unit' }, allowed: { fa: 'هر رشته متنی (مثلاً TOMAN, USD, IRR)', en: 'Any string (e.g. TOMAN, USD, IRR)' }, defaultVal: '—' },
+                            { name: 'notes', type: 'string', required: false, desc: { fa: 'یادداشت داخلی برای این نماینده', en: 'Internal note for this sub-admin' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: '—' },
+                            { name: 'allow_openvpn', type: 'boolean', required: false, desc: { fa: 'دسترسی کاربران این نماینده به OpenVPN', en: 'Whether this sub-admin\'s users can access OpenVPN' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
+                            { name: 'allow_l2tp', type: 'boolean', required: false, desc: { fa: 'دسترسی کاربران این نماینده به L2TP', en: 'Whether this sub-admin\'s users can access L2TP' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
+                            { name: 'allow_cisco', type: 'boolean', required: false, desc: { fa: 'دسترسی کاربران این نماینده به Cisco', en: 'Whether this sub-admin\'s users can access Cisco' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
+                            { name: 'allow_wg1', type: 'boolean', required: false, desc: { fa: 'دسترسی کاربران این نماینده به WireGuard پیش‌فرض (wg1)', en: 'Whether this sub-admin\'s users can access default WireGuard (wg1)' }, allowed: { fa: 'true / false', en: 'true / false' }, defaultVal: '—' },
+                            { name: 'allowed_wg_instances', type: 'array of strings', required: false, desc: { fa: 'جایگزینی کامل لیست وایرگاردهای اضافه (wg2 به بعد) مجاز برای این نماینده', en: 'Fully replaces the list of additional WireGuard instances (wg2+) allowed for this sub-admin' }, allowed: { fa: 'آرایه‌ای از نام instance ها (مثلاً ["wg2", "wg3"])', en: 'Array of instance names (e.g. ["wg2", "wg3"])' }, defaultVal: '—' }
                         ],
                         examples: [
                             { lang: 'cURL (Status & Limits)', code: `curl -X PUT "https://API_DOMAIN/api/v1/sub_admins/1" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"is_active": false, "max_users_limit": 60, "total_usage_quota_gb": 500}'` },
                             { lang: 'cURL (Wallet & Price)', code: `curl -X PUT "https://API_DOMAIN/api/v1/sub_admins/1" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"wallet_balance": 15.5, "price_per_gb": 0.75, "currency_unit": "USD"}'` },
-                            { lang: 'cURL (Full Profile Update)', code: `curl -X PUT "https://API_DOMAIN/api/v1/sub_admins/1" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "new_reseller", "password": "newpass", "panel_path": "new_panel", "expiry_date": "2027-06-01", "allowed_servers": ["main_config_0"]}'` }
+                            { lang: 'cURL (Full Profile Update)', code: `curl -X PUT "https://API_DOMAIN/api/v1/sub_admins/1" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"username": "new_reseller", "password": "newpass", "panel_path": "new_panel", "expiry_date": "2027-06-01", "allowed_servers": ["main_config_0"]}'` },
+                            { lang: 'cURL (Update WireGuard Access)', code: `curl -X PUT "https://API_DOMAIN/api/v1/sub_admins/1" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"allow_wg1": true, "allowed_wg_instances": ["wg2", "wg3"]}'` }
                         ],
                         response: `{\n  "success": true,\n  "message": "Sub-admin updated.",\n  "sub_admin": { ... }\n}`
                     },
@@ -684,6 +727,16 @@
                         ],
                         response: `{\n  "success": true,\n  "default_ports": [],\n  "custom_ports": []\n}`
                     },
+                    { id: 'servers_for_ports', category: 'ports', method: 'GET', path: '/api/v1/public/servers_for_ports',
+                        title: { fa: 'سرورهای قابل انتخاب برای پورت', en: 'Servers Available for Port Assignment' },
+                        desc: { fa: 'لیست ساده‌ی "main" و تمام نودها با نام قابل‌نمایش، مخصوص پر کردن مقدار server_ids در افزودن/حذف پورت. برخلاف all_selectable_servers که برای دسترسی نمایندگان استفاده می‌شود، این لیست فقط main و node_<id> را برمی‌گرداند (بدون گزینه‌های تانل). نیاز به کلید ادمین کل.', en: 'A simple list of "main" plus every node with a display name, meant for filling the server_ids value when adding/removing a port. Unlike all_selectable_servers (used for sub-admin access), this only returns main and node_<id> entries (no tunnel options). Requires main admin API key.' },
+                        headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'API ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } }],
+                        examples: [
+                            { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/public/servers_for_ports" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY"` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/public/servers_for_ports"\nheaders = {"X-API-KEY": "YOUR_MAIN_ADMIN_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
+                        ],
+                        response: `{\n  "success": true,\n  "servers": [\n    { "id": "main", "name": "Main Server" },\n    { "id": "node_1", "name": "Node: Germany-Hetzner" }\n  ]\n}`
+                    },
                     { id: 'add_port_public', category: 'ports', method: 'POST', path: '/api/v1/public/ports',
                         title: { fa: 'افزودن پورت کاستوم', en: 'Add Port Protocol' },
                         desc: { fa: 'اضافه کردن پورت کاستوم OpenVPN به یک یا چند سرور. نیاز به کلید ادمین کل.', en: 'Add a new port protocol on selected servers. Requires main admin API key.' },
@@ -732,22 +785,136 @@
                         response: `{\n  "success": true,\n  "servers": [ { "id": "main_config_0", "name": "Main Server - Direct" } ]\n}`
                     },
 
-                    // ==================== SETTINGS ====================
-                    { id: 'edit_l2tp_secret', category: 'settings', method: 'PUT', path: '/api/v1/settings/l2tp_secret',
-                        title: { fa: 'تغییر کلید Secret L2TP', en: 'Change L2TP Secret Key' },
-                        desc: { fa: 'تغییر کلید PSK شبکه IPsec برای L2TP و اعمال فوری روی همه سرورها. نیاز به کلید ادمین کل.', en: 'Update IPsec shared secret for L2TP and apply to all nodes. Requires main admin API key.' },
+                    // ==================== WIREGUARD ====================
+                    { id: 'list_wg_instances', category: 'wireguard', method: 'GET', path: '/api/v1/public/wireguard/instances',
+                        title: { fa: 'لیست وایرگاردها (wg1 به بعد)', en: 'List WireGuard Instances' },
+                        desc: { fa: 'دریافت لیست تمام وایرگاردها شامل wg1 پیش‌فرض و هر instance اضافه (wg2, wg3, ...). نیاز به کلید ادمین کل.', en: 'Get all WireGuard instances including the default wg1 and any extra instances (wg2, wg3, ...). Requires main admin API key.' },
+                        headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } }],
+                        examples: [
+                            { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/public/wireguard/instances" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY"` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/public/wireguard/instances"\nheaders = {"X-API-KEY": "YOUR_MAIN_ADMIN_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
+                        ],
+                        response: `{\n  "success": true,\n  "instances": [\n    { "id": 1, "name": "wg1", "port": 51821, "subnet": "10.201.0.0/16", "is_active": true, "is_default": true, "display_name": "WireGuard Default", "dns": "1.1.1.1", "mtu": null, "allowed_ips": "0.0.0.0/0, ::/0", "keepalive": 25, "servers": ["main"], "servers_display": [{ "id": "main", "name": "Main Server" }] },\n    { "id": 2, "name": "wg2", "port": 51822, "subnet": "10.202.0.0/16", "is_active": true, "is_default": false, "display_name": "Fast WG", "dns": "1.1.1.1", "mtu": 1420, "allowed_ips": "0.0.0.0/0, ::/0", "keepalive": 25, "servers": ["main", "node_1"], "servers_display": [{ "id": "main", "name": "Main Server" }, { "id": "node_1", "name": "Node: Germany-Hetzner" }] }\n  ]\n}`
+                    },
+                    { id: 'get_wg_instance', category: 'wireguard', method: 'GET', path: '/api/v1/public/wireguard/instances/<int:instance_id>',
+                        title: { fa: 'دریافت یک وایرگارد', en: 'Get Single WireGuard Instance' },
+                        desc: { fa: 'دریافت جزئیات کامل یک instance وایرگارد خاص. نیاز به کلید ادمین کل.', en: 'Get full details of a specific WireGuard instance. Requires main admin API key.' },
+                        headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } }],
+                        pathParams: [{ name: 'instance_id', desc: { fa: 'آیدی instance وایرگارد', en: 'WireGuard instance ID' }, allowed: { fa: 'عدد صحیح (ID)', en: 'Integer (ID)' } }],
+                        examples: [
+                            { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/public/wireguard/instances/2" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY"` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/public/wireguard/instances/2"\nheaders = {"X-API-KEY": "YOUR_MAIN_ADMIN_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
+                        ],
+                        response: `{\n  "success": true,\n  "instance": { "id": 2, "name": "wg2", "port": 51822, "subnet": "10.202.0.0/16", "is_active": true, "is_default": false, "display_name": "Fast WG", "dns": "1.1.1.1", "mtu": 1420, "allowed_ips": "0.0.0.0/0, ::/0", "keepalive": 25, "servers": ["main", "node_1"], "servers_display": [{ "id": "main", "name": "Main Server" }, { "id": "node_1", "name": "Node: Germany-Hetzner" }] }\n}`
+                    },
+                    { id: 'suggest_wg_subnet', category: 'wireguard', method: 'GET', path: '/api/v1/public/wireguard/suggest_subnet',
+                        title: { fa: 'پیشنهاد هوشمند Subnet', en: 'Suggest Free Subnet' },
+                        desc: { fa: 'اولین بازه /16 آزاد (بدون تداخل با subnet های موجود) را برای ساخت instance جدید پیشنهاد می‌دهد. نیاز به کلید ادمین کل.', en: 'Suggests the first free /16 range (no overlap with existing subnets) for creating a new instance. Requires main admin API key.' },
+                        headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } }],
+                        examples: [
+                            { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/public/wireguard/suggest_subnet" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY"` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/public/wireguard/suggest_subnet"\nheaders = {"X-API-KEY": "YOUR_MAIN_ADMIN_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
+                        ],
+                        response: `{\n  "success": true,\n  "subnet": "10.203.0.0/16"\n}`
+                    },
+                    { id: 'create_wg_instance', category: 'wireguard', method: 'POST', path: '/api/v1/public/wireguard/instances',
+                        title: { fa: 'ساخت وایرگارد جدید (wg2 به بعد)', en: 'Create WireGuard Instance' },
+                        desc: { fa: 'ساخت یک instance وایرگارد جدید (wg2, wg3, ...) و نصب/فعال‌سازی خودکار روی سرورهای انتخابی. نیاز به کلید ادمین کل.', en: 'Create a new WireGuard instance (wg2, wg3, ...) and automatically provision it on the selected servers. Requires main admin API key.' },
                         headers: [
                             { name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } },
                             { name: 'Content-Type', required: true, desc: { fa: 'application/json', en: 'application/json' }, allowed: { fa: 'application/json', en: 'application/json' } }
                         ],
                         bodyParams: [
-                            { name: 'l2tp_secret', type: 'string', required: true, desc: { fa: 'کلید رمزنگاری جدید برای IPsec', en: 'New IPsec Pre-Shared Key' }, allowed: { fa: 'حداقل ۸ کاراکتر، بدون کوتیشن', en: 'Min 8 chars, no quotes' }, defaultVal: '—' }
+                            { name: 'name', type: 'string', required: true, desc: { fa: 'نام instance (wg1 رزرو شده است)', en: 'Instance name (wg1 is reserved)' }, allowed: { fa: 'الگوی wg2, wg3, ... (فقط عدد بعد از wg، حداقل ۲)', en: 'Pattern wg2, wg3, ... (number after wg, minimum 2)' }, defaultVal: '—' },
+                            { name: 'port', type: 'integer', required: true, desc: { fa: 'پورت UDP اختصاصی این وایرگارد', en: 'Dedicated UDP port for this instance' }, allowed: { fa: 'عدد صحیح بین ۱۰۲۴ تا ۶۵۵۳۵ و آزاد', en: 'Integer 1024-65535, must be free' }, defaultVal: '—' },
+                            { name: 'server_ids', type: 'array of strings', required: true, desc: { fa: 'سرورهایی که این وایرگارد روشون نصب/فعال بشه', en: 'Servers to provision this instance on' }, allowed: { fa: 'آرایه‌ای شامل "main" و/یا "node_<id>" (مثلاً ["main", "node_1"])', en: 'Array containing "main" and/or "node_<id>" (e.g. ["main", "node_1"])' }, defaultVal: '—' },
+                            { name: 'subnet', type: 'string (CIDR)', required: false, desc: { fa: 'بازه IP اختصاصی این وایرگارد (پیشنهاد می‌شود از suggest_subnet استفاده کنید)', en: 'Dedicated IP range for this instance (recommended: use suggest_subnet first)' }, allowed: { fa: 'CIDR معتبر بدون تداخل با instance های دیگر', en: 'Valid CIDR not overlapping other instances' }, defaultVal: '10.202.0.0/16' },
+                            { name: 'display_name', type: 'string', required: false, desc: { fa: 'نام نمایشی (در ساب مشتری و نام فایل دانلود استفاده می‌شود)', en: 'Display name (used in the subscription page and download filename)' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: 'نام instance (مثلاً wg2)' },
+                            { name: 'dns', type: 'string', required: false, desc: { fa: 'DNS کلاینت‌ها', en: 'Client DNS' }, allowed: { fa: 'آدرس DNS (مثلاً 1.1.1.1)', en: 'DNS address (e.g. 1.1.1.1)' }, defaultVal: '1.1.1.1' },
+                            { name: 'mtu', type: 'integer', required: false, desc: { fa: 'MTU کانفیگ کلاینت', en: 'Client config MTU' }, allowed: { fa: 'عدد صحیح (معمولاً ۱۴۲۰)', en: 'Integer (typically 1420)' }, defaultVal: '—' },
+                            { name: 'allowed_ips', type: 'string', required: false, desc: { fa: 'AllowedIPs کانفیگ کلاینت', en: 'Client config AllowedIPs' }, allowed: { fa: 'مثلاً "0.0.0.0/0, ::/0"', en: 'e.g. "0.0.0.0/0, ::/0"' }, defaultVal: '0.0.0.0/0, ::/0' },
+                            { name: 'keepalive', type: 'integer', required: false, desc: { fa: 'PersistentKeepalive (ثانیه)', en: 'PersistentKeepalive (seconds)' }, allowed: { fa: 'عدد صحیح ≥ ۰', en: 'Integer ≥ 0' }, defaultVal: '25' }
                         ],
                         examples: [
-                            { lang: 'cURL (Simple)', code: `curl -X PUT "https://API_DOMAIN/api/v1/settings/l2tp_secret" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"l2tp_secret": "my_new_strong_secret"}'` },
-                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/settings/l2tp_secret"\nheaders = {\n    "X-API-KEY": "YOUR_MAIN_ADMIN_KEY",\n    "Content-Type": "application/json"\n}\npayload = {"l2tp_secret": "another_secret_key_123"}\n\nresponse = requests.put(url, json=payload, headers=headers)\nprint(response.json())` }
+                            { lang: 'cURL (Main Only)', code: `curl -X POST "https://API_DOMAIN/api/v1/public/wireguard/instances" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"name": "wg2", "port": 51822, "subnet": "10.202.0.0/16", "server_ids": ["main"], "display_name": "Fast WG"}'` },
+                            { lang: 'cURL (Main + Node)', code: `curl -X POST "https://API_DOMAIN/api/v1/public/wireguard/instances" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"name": "wg3", "port": 51823, "subnet": "10.203.0.0/16", "server_ids": ["main", "node_1"], "dns": "1.1.1.1", "mtu": 1420}'` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/public/wireguard/instances"\nheaders = {\n    "X-API-KEY": "YOUR_MAIN_ADMIN_KEY",\n    "Content-Type": "application/json"\n}\npayload = {\n    "name": "wg2",\n    "port": 51822,\n    "subnet": "10.202.0.0/16",\n    "server_ids": ["main"],\n    "display_name": "Fast WG"\n}\n\nresponse = requests.post(url, json=payload, headers=headers)\nprint(response.json())` }
                         ],
-                        response: `{\n  "success": true,\n  "message": "L2TP secret key updated successfully and applied to nodes."\n}`
+                        response: `{\n  "success": true,\n  "message": "Instance wg2 created successfully",\n  "instance": { "id": 2, "name": "wg2", "port": 51822, "subnet": "10.202.0.0/16", "is_active": true, "is_default": false, "display_name": "Fast WG", "servers": ["main"], "servers_display": [{ "id": "main", "name": "Main Server" }] }\n}`
+                    },
+                    { id: 'edit_wg_instance', category: 'wireguard', method: 'PUT', path: '/api/v1/public/wireguard/instances/<int:instance_id>',
+                        title: { fa: 'ویرایش وایرگارد', en: 'Edit WireGuard Instance' },
+                        desc: { fa: 'ویرایش تنظیمات یک وایرگارد اضافه (wg2 به بعد). تغییر پورت به‌صورت خودکار روی سرور مادر و نودهای مرتبط اعمال می‌شود. با ارسال server_ids می‌توان بدون حذف/بازسازی instance، سرور/نود اضافه یا حذف کرد — سرورهای بدون تغییر لمس نمی‌شن و اتصال کاربرهای فعال قطع نمی‌شه. instance پیش‌فرض (wg1) از این مسیر قابل ویرایش نیست. نیاز به کلید ادمین کل.', en: 'Update settings of an additional WireGuard instance (wg2+). Changing the port is automatically applied on the main server and related nodes. Sending server_ids lets you add/remove servers without deleting and recreating the instance — unchanged servers are left untouched and active user connections are not interrupted. The default instance (wg1) cannot be edited here. Requires main admin API key.' },
+                        headers: [
+                            { name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } },
+                            { name: 'Content-Type', required: true, desc: { fa: 'application/json', en: 'application/json' }, allowed: { fa: 'application/json', en: 'application/json' } }
+                        ],
+                        pathParams: [{ name: 'instance_id', desc: { fa: 'آیدی instance وایرگارد (نه wg1)', en: 'WireGuard instance ID (not wg1)' }, allowed: { fa: 'عدد صحیح (ID)', en: 'Integer (ID)' } }],
+                        bodyParams: [
+                            { name: 'port', type: 'integer', required: false, desc: { fa: 'پورت UDP جدید', en: 'New UDP port' }, allowed: { fa: 'عدد صحیح بین ۱۰۲۴ تا ۶۵۵۳۵ و آزاد', en: 'Integer 1024-65535, must be free' }, defaultVal: '—' },
+                            { name: 'display_name', type: 'string', required: false, desc: { fa: 'نام نمایشی جدید', en: 'New display name' }, allowed: { fa: 'هر رشته متنی', en: 'Any string' }, defaultVal: '—' },
+                            { name: 'dns', type: 'string', required: false, desc: { fa: 'DNS جدید کلاینت‌ها', en: 'New client DNS' }, allowed: { fa: 'آدرس DNS', en: 'DNS address' }, defaultVal: '—' },
+                            { name: 'mtu', type: 'integer', required: false, desc: { fa: 'MTU جدید', en: 'New MTU' }, allowed: { fa: 'عدد صحیح', en: 'Integer' }, defaultVal: '—' },
+                            { name: 'allowed_ips', type: 'string', required: false, desc: { fa: 'AllowedIPs جدید', en: 'New AllowedIPs' }, allowed: { fa: 'مثلاً "0.0.0.0/0"', en: 'e.g. "0.0.0.0/0"' }, defaultVal: '—' },
+                            { name: 'keepalive', type: 'integer', required: false, desc: { fa: 'PersistentKeepalive جدید', en: 'New PersistentKeepalive' }, allowed: { fa: 'عدد صحیح ≥ ۰', en: 'Integer ≥ 0' }, defaultVal: '—' },
+                            { name: 'server_ids', type: 'array of strings', required: false, desc: { fa: 'لیست کامل و نهایی سرورهایی که این instance باید روشون فعال باشه (جایگزین لیست قبلی می‌شه، نه اضافه‌شونده). "main" برای سرور اصلی، "node_<id>" برای نودها.', en: 'Full, final list of servers this instance should run on (replaces the previous list, not additive). "main" for the main server, "node_<id>" for nodes.' }, allowed: { fa: 'آرایه‌ای غیرخالی از شناسه‌های سرور (مثلاً ["main", "node_3"])', en: 'Non-empty array of server identifiers (e.g. ["main", "node_3"])' }, defaultVal: '—' }
+                        ],
+                        examples: [
+                            { lang: 'cURL (Rename)', code: `curl -X PUT "https://API_DOMAIN/api/v1/public/wireguard/instances/2" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"display_name": "Premium WG"}'` },
+                            { lang: 'cURL (Change Port)', code: `curl -X PUT "https://API_DOMAIN/api/v1/public/wireguard/instances/2" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"port": 51830}'` },
+                            { lang: 'cURL (Add/Remove Servers)', code: `curl -X PUT "https://API_DOMAIN/api/v1/public/wireguard/instances/2" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"server_ids": ["main", "node_3", "node_7"]}'` }
+                        ],
+                        response: `{\n  "success": true,\n  "message": "Instance wg2 updated successfully",\n  "instance": { "id": 2, "name": "wg2", "port": 51830, "subnet": "10.202.0.0/16", "is_active": true, "is_default": false, "display_name": "Premium WG", "dns": "1.1.1.1", "mtu": 1420, "allowed_ips": "0.0.0.0/0, ::/0", "keepalive": 25, "servers": ["main", "node_3", "node_7"], "servers_display": [{ "id": "main", "name": "Main Server" }, { "id": "node_3", "name": "Node: Germany-Hetzner" }, { "id": "node_7", "name": "Node: France-OVH" }] }\n}`
+                    },
+                    { id: 'toggle_wg_instance', category: 'wireguard', method: 'POST', path: '/api/v1/public/wireguard/instances/<int:instance_id>/toggle',
+                        title: { fa: 'فعال / غیرفعال کردن وایرگارد', en: 'Toggle WireGuard Instance' },
+                        desc: { fa: 'فعال یا غیرفعال کردن یک وایرگارد اضافه بدون حذف آن. instance پیش‌فرض (wg1) قابل غیرفعال‌سازی از این مسیر نیست. نیاز به کلید ادمین کل.', en: 'Activate or deactivate an additional WireGuard instance without deleting it. The default instance (wg1) cannot be toggled here. Requires main admin API key.' },
+                        headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } }],
+                        pathParams: [{ name: 'instance_id', desc: { fa: 'آیدی instance وایرگارد (نه wg1)', en: 'WireGuard instance ID (not wg1)' }, allowed: { fa: 'عدد صحیح (ID)', en: 'Integer (ID)' } }],
+                        examples: [
+                            { lang: 'cURL', code: `curl -X POST "https://API_DOMAIN/api/v1/public/wireguard/instances/2/toggle" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY"` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/public/wireguard/instances/2/toggle"\nheaders = {"X-API-KEY": "YOUR_MAIN_ADMIN_KEY"}\n\nresponse = requests.post(url, headers=headers)\nprint(response.json())` }
+                        ],
+                        response: `{\n  "success": true,\n  "message": "Instance wg2 deactivated",\n  "is_active": false\n}`
+                    },
+                    { id: 'delete_wg_instance', category: 'wireguard', method: 'DELETE', path: '/api/v1/public/wireguard/instances/<int:instance_id>',
+                        title: { fa: 'حذف وایرگارد', en: 'Delete WireGuard Instance' },
+                        desc: { fa: 'حذف کامل یک وایرگارد اضافه از سرور مادر، تمام نودهای مرتبط، و پاکسازی دسترسی کاربران به آن. instance پیش‌فرض (wg1) قابل حذف نیست. نیاز به کلید ادمین کل.', en: 'Completely removes an additional WireGuard instance from the main server, all related nodes, and cleans up user access references. The default instance (wg1) cannot be deleted. Requires main admin API key.' },
+                        headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } }],
+                        pathParams: [{ name: 'instance_id', desc: { fa: 'آیدی instance وایرگارد (نه wg1)', en: 'WireGuard instance ID (not wg1)' }, allowed: { fa: 'عدد صحیح (ID)', en: 'Integer (ID)' } }],
+                        examples: [
+                            { lang: 'cURL', code: `curl -X DELETE "https://API_DOMAIN/api/v1/public/wireguard/instances/2" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY"` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/public/wireguard/instances/2"\nheaders = {"X-API-KEY": "YOUR_MAIN_ADMIN_KEY"}\n\nresponse = requests.delete(url, headers=headers)\nprint(response.json())` }
+                        ],
+                        response: `{\n  "success": true,\n  "message": "Instance wg2 deleted"\n}`
+                    },
+
+                    // ==================== SETTINGS ====================
+                    { id: 'update_ipsec_psk', category: 'settings', method: 'POST', path: '/api/v1/update_ipsec_psk',
+                        title: { fa: 'تغییر کلید IPsec PSK (L2TP)', en: 'Change IPsec PSK (L2TP)' },
+                        desc: { fa: 'تغییر کلید PSK اشتراکی IPsec که L2TP از آن استفاده می‌کند و اعمال فوری روی سرور اصلی و تمام نودهای آنلاین (با ری‌استارت strongswan-starter و xl2tpd). نیاز به کلید ادمین کل.', en: 'Updates the IPsec pre-shared key used by L2TP and applies it immediately on the main server and every online node (restarting strongswan-starter and xl2tpd). Requires main admin API key.' },
+                        headers: [
+                            { name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } },
+                            { name: 'Content-Type', required: true, desc: { fa: 'application/json', en: 'application/json' }, allowed: { fa: 'application/json', en: 'application/json' } }
+                        ],
+                        bodyParams: [
+                            { name: 'new_psk', type: 'string', required: true, desc: { fa: 'کلید PSK جدید برای IPsec', en: 'New IPsec Pre-Shared Key' }, allowed: { fa: 'فقط حروف/عدد و نمادهای ! @ # % ^ & * ( ) - _ = + . ,  — حداکثر ۱۲۸ کاراکتر', en: 'Letters/numbers and the symbols ! @ # % ^ & * ( ) - _ = + . , only — max 128 chars' }, defaultVal: '—' }
+                        ],
+                        examples: [
+                            { lang: 'cURL (Simple)', code: `curl -X POST "https://API_DOMAIN/api/v1/update_ipsec_psk" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"new_psk": "my_new_strong_secret"}'` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/update_ipsec_psk"\nheaders = {\n    "X-API-KEY": "YOUR_MAIN_ADMIN_KEY",\n    "Content-Type": "application/json"\n}\npayload = {"new_psk": "another_secret_key_123"}\n\nresponse = requests.post(url, json=payload, headers=headers)\nprint(response.json())` }
+                        ],
+                        response: `{\n  "success": true,\n  "message": "IPsec PSK updated locally and on 3 nodes."\n}`
+                    },
+                    { id: 'get_server_settings', category: 'settings', method: 'GET', path: '/api/v1/server_settings',
+                        title: { fa: 'دریافت تنظیمات عمومی سرور', en: 'Get General Server Settings' },
+                        desc: { fa: 'دریافت تنظیمات عمومی سرور اصلی (در حال حاضر فقط کلید IPsec PSK فعلی). نیاز به کلید ادمین کل.', en: 'Returns general settings of the main server (currently only the active IPsec PSK). Requires main admin API key.' },
+                        headers: [{ name: 'X-API-KEY', required: true, desc: { fa: 'کلید دسترسی ادمین کل', en: 'Main Admin API Key' }, allowed: { fa: 'رشته متنی (Main Admin API Key)', en: 'String (Main Admin API Key)' } }],
+                        examples: [
+                            { lang: 'cURL', code: `curl -X GET "https://API_DOMAIN/api/v1/server_settings" \\\n  -H "X-API-KEY: YOUR_MAIN_ADMIN_KEY"` },
+                            { lang: 'Python', code: `import requests\n\nurl = "https://API_DOMAIN/api/v1/server_settings"\nheaders = {"X-API-KEY": "YOUR_MAIN_ADMIN_KEY"}\n\nresponse = requests.get(url, headers=headers)\nprint(response.json())` }
+                        ],
+                        response: `{\n  "success": true,\n  "settings": {\n    "ipsec_psk": "my_new_strong_secret"\n  }\n}`
                     },
                     { id: 'panel_status', category: 'settings', method: 'GET', path: '/api/v1/status',
                         title: { fa: 'وضعیت سلامت پنل', en: 'Panel Health Status' },
